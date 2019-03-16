@@ -11,7 +11,7 @@
 #import "ChatUser.h"
 #import "ChatUtil.h"
 #import "ChatMessage.h"
-#import "ChatLocal.h"
+#import "Common.h"
 #import "ChatManager.h"
 @import Firebase;
 
@@ -19,16 +19,12 @@
 
 -(NSString *)dateFormattedForListView {
     NSString *date = [ChatUtil timeFromNowToStringFormattedForConversation:self.date];
-//    NSDateFormatter *timeFormat = [[NSDateFormatter alloc] init];
-//    [timeFormat setDateFormat:@"HH:mm"];
-//    NSString *date = [timeFormat stringFromDate:self.date];
     return date;
 }
 
 -(NSString *)textForLastMessage:(NSString *)me {
-//    NSLog(@"SENDER: %@ ME: %@", self.sender, me);
     if ([self.sender isEqualToString:me]) {
-        NSString *you = [ChatLocal translate:@"You"];
+        NSString *you = [LI18n localizedString:@"You"];
         return [[NSString alloc] initWithFormat:@"%@: %@", you, self.last_message_text];
     } else {
         return self.last_message_text;

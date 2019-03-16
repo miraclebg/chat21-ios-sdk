@@ -7,9 +7,7 @@
 //
 
 #import "NotificationAlertView.h"
-#import "ChatConversationsVC.h"
 #import "ChatManager.h"
-#import "ChatUIManager.h"
 
 @interface NotificationAlertView () {
     SystemSoundID soundID;

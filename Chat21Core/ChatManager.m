@@ -18,12 +18,11 @@
 #import "ChatGroupsDB.h"
 #import "ChatPresenceHandler.h"
 #import "ChatUtil.h"
-#import "ChatConversationsVC.h"
 #import "ChatUser.h"
+#import "Common.h"
 #import "ChatContactsSynchronizer.h"
 #import "ChatConnectionStatusHandler.h"
 #import "ChatMessage.h"
-#import "ChatLocal.h"
 #import "ChatService.h"
 #import "ChatDiskImageCache.h"
 
@@ -457,7 +456,7 @@ static ChatManager *sharedInstance = nil;
 }
 
 -(NSString *)groupCreatedMessageForMemberInGroup:(ChatGroup *)group {
-    return [NSString stringWithFormat:[ChatLocal translate:@"You created the group"], [group.name capitalizedString]];
+    return [NSString stringWithFormat:[LI18n localizedString:@"You created the group"], [group.name capitalizedString]];
 }
 
 -(void)addMember:(NSString *)member_id toGroup:(ChatGroup *)group withCompletionBlock:(void (^)(NSError *))completionBlock {

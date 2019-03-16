@@ -10,10 +10,9 @@
 #import <Firebase/Firebase.h>
 #import "ChatConversation.h"
 #import "ChatManager.h"
-//#import "NotificationAlertView.h"
-#import "ChatConversationsVC.h"
-#import "ChatLocal.h"
 #import "ChatDiskImageCache.h"
+#import "ChatUser.h"
+#import "Common.h"
 
 @implementation ChatUtil
 
@@ -284,30 +283,30 @@
     //    NSLog(@"SECONDS ELAPSED %f", secondsElapsed);
     if (secondsElapsed < 60) {
         NSLog(@"<60");
-        timeMessagePart = [ChatLocal translate:@"FewSecondsAgoLKey"];
+        timeMessagePart = [LI18n localizedString:@"FewSecondsAgoLKey"];
         unitMessagePart = @"";
     }
     else if (secondsElapsed >= 60 && secondsElapsed <120) {
         //        NSLog(@"<120");
-        timeMessagePart = [ChatLocal translate:@"AboutAMinuteAgoLKey"];
+        timeMessagePart = [LI18n localizedString:@"AboutAMinuteAgoLKey"];
         unitMessagePart = @"";
     }
     else if (secondsElapsed >= 120 && secondsElapsed <3600) {
         //        NSLog(@"<360");
         int minutes = secondsElapsed / 60.0;
         timeMessagePart = [[NSString alloc] initWithFormat:@"%d ", minutes];
-        unitMessagePart = [ChatLocal translate:@"MinutesAgoLKey"];
+        unitMessagePart = [LI18n localizedString:@"MinutesAgoLKey"];
     }
     else if (secondsElapsed >=3600 && secondsElapsed < 5400) {
         //        NSLog(@"<5400");
-        timeMessagePart = [ChatLocal translate:@"AboutAnHourAgoLKey"];
+        timeMessagePart = [LI18n localizedString:@"AboutAnHourAgoLKey"];
         unitMessagePart = @"";
     }
     else if (secondsElapsed >= 5400 && secondsElapsed <= 86400) { // HH:mm
         //        NSLog(@"<86400");
         if ([ChatUtil isYesterday:date]) {
             //            NSLog(@"Yesterday in < 1 day");
-            timeMessagePart = [ChatLocal translate:@"yesterday"];
+            timeMessagePart = [LI18n localizedString:@"yesterday"];
             unitMessagePart = @"";
         } else {
             //            NSLog(@"Not Yesterday. time in this day");
@@ -320,7 +319,7 @@
     else if (secondsElapsed > 86400 && secondsElapsed <= 518400) { // 518.400 = 6 days. Format = Thrusday, Monday ...
         if ([ChatUtil isYesterday:date]) {
             //            NSLog(@"Yesterday");
-            timeMessagePart = [ChatLocal translate:@"yesterday"];
+            timeMessagePart = [LI18n localizedString:@"yesterday"];
             unitMessagePart = @"";
         } else {
             //            NSLog(@"Thrusday, monday...");
@@ -334,7 +333,7 @@
         //        NSLog(@"6/4/2015...");
         NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
         // http://mobiledevelopertips.com/cocoa/date-formatters-examples-take-2.html
-        [dateFormat setDateFormat:[ChatLocal translate:@"ShortDateFormat"]];
+        [dateFormat setDateFormat:[LI18n localizedString:@"ShortDateFormat"]];
         timeMessagePart = [dateFormat stringFromDate:date];
         unitMessagePart = @"";
     }
