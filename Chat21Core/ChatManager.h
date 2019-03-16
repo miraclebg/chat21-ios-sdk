@@ -59,7 +59,7 @@
 -(ChatConversationsHandler *)getAndStartConversationsHandler;
 -(ChatConversationHandler *)getConversationHandlerForRecipient:(ChatUser *)recipient;
 -(ChatConversationHandler *)getConversationHandlerForGroup:(ChatGroup *)group;
--(void)startConversationHandler:(ChatConversation *)conv;
+//-(void)startConversationHandler:(ChatConversation *)conv;
 
 -(ChatConversationsHandler *)createConversationsHandler;
 -(ChatPresenceHandler *)createPresenceHandler;

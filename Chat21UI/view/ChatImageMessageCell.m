@@ -67,10 +67,10 @@
     // image
     
     // events
-    UIGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:viewController action:@selector(tapOnCell:)];
+    /*UIGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:viewController action:@selector(tapOnCell:)];
     UIGestureRecognizer *longTapGestureRecognizer = [[UILongPressGestureRecognizer alloc] initWithTarget:viewController action:@selector(longTapOnCell:)];
     [self.messageImageView addGestureRecognizer:tapGestureRecognizer];
-    [self.messageImageView addGestureRecognizer:longTapGestureRecognizer];
+    [self.messageImageView addGestureRecognizer:longTapGestureRecognizer];*/
     
     self.messageImageView.userInteractionEnabled = YES;
     

@@ -661,7 +661,7 @@
         [UIView animateWithDuration:animationDuration animations:^{
             self.layoutContraintBottomBarMessageBottomView.constant = keyboardFrame.size.height;
             [self.view layoutIfNeeded];
-            [containerTVC scrollToLastMessage:YES];
+            [self->containerTVC scrollToLastMessage:YES];
         }];
         
         keyboardShow = YES;
@@ -690,7 +690,7 @@
         [UIView animateWithDuration:animationDuration animations:^{
             self.layoutContraintBottomBarMessageBottomView.constant = keyboardFrame.size.height;
             [self.view layoutIfNeeded];
-            [containerTVC scrollToLastMessage:YES];
+            [self->containerTVC scrollToLastMessage:YES];
         }];
     }
 }
@@ -820,8 +820,8 @@ static float messageTime = 0.5;
 
 -(void)renderMessages {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [containerTVC reloadDataTableViewOnIndex:self.conversationHandler.messages.count - 1];
-        [containerTVC scrollToLastMessage:NO];
+        [self->containerTVC reloadDataTableViewOnIndex:self.conversationHandler.messages.count - 1];
+        [self->containerTVC scrollToLastMessage:NO];
 //        [self scrollTo];
     });
 }

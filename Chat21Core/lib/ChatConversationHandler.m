@@ -554,12 +554,12 @@
                                                        
                                                    }
                                                }];
-    FIRStorageHandle observer = [uploadTask observeStatus:FIRStorageTaskStatusProgress
-                                                  handler:^(FIRStorageTaskSnapshot *snapshot) {
-//                                                      NSLog(@"uploading %@", snapshot);
-//                                                      NSLog(@"completion: %f, %lld", snapshot.progress.fractionCompleted, snapshot.progress.completedUnitCount);
-                                                      progressCallback(snapshot.progress.fractionCompleted);
-                                                  }];
+    [uploadTask observeStatus:FIRStorageTaskStatusProgress
+                      handler:^(FIRStorageTaskSnapshot *snapshot) {
+                          //                                                      NSLog(@"uploading %@", snapshot);
+                          //                                                      NSLog(@"completion: %f, %lld", snapshot.progress.fractionCompleted, snapshot.progress.completedUnitCount);
+                          progressCallback(snapshot.progress.fractionCompleted);
+                      }];
 }
 
 //-(void)finishedReceivingMessage:(ChatMessage *)message {

@@ -13,7 +13,6 @@
 #import "ChatMessageComponents.h"
 #import <QuartzCore/QuartzCore.h>
 #import "ChatUtil.h"
-#import "ChatMiniBrowserVC.h"
 #import "ChatUser.h"
 #import "ChatLocal.h"
 #import "ChatInfoMessageTVC.h"
@@ -247,12 +246,11 @@ static NSString *MATCH_TYPE_CHAT_LINK = @"CHATLINK";
 //    [self performSegueWithIdentifier:@"imageView" sender:self];
 //    ChatNYTPhoto .image .placeholderImage
     
-    UIImage *image = [message imageFromMediaFolder];
-    ChatNYTPhoto *photo = [[ChatNYTPhoto alloc] init];
-    photo.image = image;
-    NSArray *photos = [NSArray arrayWithObjects:photo, nil];
+    //UIImage *image = [message imageFromMediaFolder];
+    //ChatNYTPhoto *photo = [[ChatNYTPhoto alloc] init];
+    //photo.image = image;
+    //NSArray *photos = [NSArray arrayWithObjects:photo, nil];
 
-#warning disabled this
     /*NYTPhotoViewerArrayDataSource *dataSource = [[NYTPhotoViewerArrayDataSource alloc] initWithPhotos:photos];
      NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithDataSource:dataSource];
      [self presentViewController:photosViewController animated:YES completion:nil];*/
@@ -753,24 +751,6 @@ static NSString *MATCH_TYPE_CHAT_LINK = @"CHATLINK";
     //    }
     
     [self.rowComponents setObject:components forKey:message.messageId];
-}
-
--(void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    NSLog(@"prepareForSegue: %@",segue.identifier);
-    if ([segue.identifier isEqualToString:@"webView"]) {
-        ChatMiniBrowserVC *vc = (ChatMiniBrowserVC *)[segue destinationViewController];
-        vc.hiddenToolBar = YES;
-        vc.titlePage = @"";
-        vc.urlPage = self.selectedHighlightLink;
-    }
-//    if ([segue.identifier isEqualToString:@"imageView"]) {
-//        ChatImageBrowserVC *vc = (ChatImageBrowserVC *)[segue destinationViewController];
-//        vc.imageURL = self.selectedImageURL;
-//    }
-    else if ([segue.identifier isEqualToString:@"info"]) {
-        ChatInfoMessageTVC *vc = (ChatInfoMessageTVC *)[segue destinationViewController];
-        vc.message = self.selectedMessage;
-    }
 }
 
 -(void)dealloc {

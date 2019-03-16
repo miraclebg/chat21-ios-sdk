@@ -327,15 +327,15 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
         NSString *querySQL = [NSString stringWithFormat:
                               @"%@ WHERE fullname LIKE \"%%%@%%\" ORDER BY fullname",SELECT_FROM_CONTACTS_STATEMENT, searchString]; //  LIMIT 50
         const char *query_stmt = [querySQL UTF8String];
-        if (sqlite3_prepare_v2(database, query_stmt, -1, &statement, NULL) == SQLITE_OK) {
-            while (sqlite3_step(statement) == SQLITE_ROW) {
-                ChatUser *contact = [self contactFromStatement:statement];
+        if (sqlite3_prepare_v2(self->database, query_stmt, -1, &self->statement, NULL) == SQLITE_OK) {
+            while (sqlite3_step(self->statement) == SQLITE_ROW) {
+                ChatUser *contact = [self contactFromStatement:self->statement];
                 [contacts addObject:contact];
             }
-            sqlite3_reset(statement);
+            sqlite3_reset(self->statement);
         } else {
             NSLog(@"**** PROBLEMS WHILE SEARCHING CONTACTS...");
-            NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
+            NSLog(@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database));
         }
         //        }
         if (callback != nil) {
@@ -376,13 +376,13 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
         NSString *sql = [NSString stringWithFormat:@"DELETE FROM contacts WHERE contactId = \"%@\"", contactId];
         //        NSLog(@"**** QUERY:%@", sql);
         const char *stmt = [sql UTF8String];
-        sqlite3_prepare_v2(database, stmt,-1, &statement, NULL);
-        if (sqlite3_step(statement) == SQLITE_DONE) {
-            sqlite3_reset(statement);
+        sqlite3_prepare_v2(self->database, stmt,-1, &self->statement, NULL);
+        if (sqlite3_step(self->statement) == SQLITE_DONE) {
+            sqlite3_reset(self->statement);
         }
         else {
-            NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
-            sqlite3_reset(statement);
+            NSLog(@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database));
+            sqlite3_reset(self->statement);
         }
         if (callback != nil) {
             callback();

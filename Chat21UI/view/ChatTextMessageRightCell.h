@@ -11,11 +11,7 @@
 
 @interface ChatTextMessageRightCell : ChatImageMessageCell
 
-@property (weak, nonatomic) IBOutlet UIView *messageBackgroundView;
 @property (weak, nonatomic) IBOutlet UILabel *messageLabel;
-@property (weak, nonatomic) IBOutlet UILabel *dateLabel;
-@property (weak, nonatomic) IBOutlet UIImageView *statusImageView;
-@property (weak, nonatomic) IBOutlet UILabel *timeLabel;
 
 -(void)configure:(ChatMessage *)message messages:(NSArray *)messages indexPath:(NSIndexPath *)indexPath viewController:(UIViewController *)viewController rowComponents:(NSMutableDictionary *)rowComponents;
 

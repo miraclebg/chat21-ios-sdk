@@ -227,25 +227,25 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
 -(void)getAllGroupsSyncronizedWithCompletion:(void(^)(NSArray<ChatGroup*> *)) callback {
     dispatch_async(serialDatabaseQueue, ^{
         NSMutableArray *groups = [[NSMutableArray alloc] init];
-        const char *dbpath = [databasePath UTF8String];
-        if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
+        const char *dbpath = [self->databasePath UTF8String];
+        if (sqlite3_open(dbpath, &self->database) == SQLITE_OK) {
             NSString *querySQL = [NSString stringWithFormat:@"%@ order by createdOn desc", SELECT_FROM_GROUPS_STATEMENT];
             const char *query_stmt = [querySQL UTF8String];
-            if (sqlite3_prepare_v2(database, query_stmt, -1, &statement, NULL) == SQLITE_OK) {
-                while (sqlite3_step(statement) == SQLITE_ROW) {
-                    ChatGroup *group = [self groupFromStatement:statement];
+            if (sqlite3_prepare_v2(self->database, query_stmt, -1, &self->statement, NULL) == SQLITE_OK) {
+                while (sqlite3_step(self->statement) == SQLITE_ROW) {
+                    ChatGroup *group = [self groupFromStatement:self->statement];
                     [groups addObject:group];
                 }
-                sqlite3_finalize(statement);
-                sqlite3_close(database);
+                sqlite3_finalize(self->statement);
+                sqlite3_close(self->database);
             } else {
                 NSLog(@"**** PROBLEMS WHILE QUERYING GROUPS...");
-                NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
-                sqlite3_finalize(statement);
-                sqlite3_close(database);
+                NSLog(@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database));
+                sqlite3_finalize(self->statement);
+                sqlite3_close(self->database);
             }
         }
-        sqlite3_close(database);
+        sqlite3_close(self->database);
         callback(groups);
     });
 }
@@ -312,25 +312,25 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
 -(void)removeGroupSyncronized:(NSString *)groupId completion:(void(^)(BOOL error)) callback {
     dispatch_async(serialDatabaseQueue, ^{
         //    NSLog(@"**** remove query...");
-        const char *dbpath = [databasePath UTF8String];
-        if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
+        const char *dbpath = [self->databasePath UTF8String];
+        if (sqlite3_open(dbpath, &self->database) == SQLITE_OK) {
             NSString *sql = [NSString stringWithFormat:@"DELETE FROM groups WHERE groupId = \"%@\"", groupId];
             //        NSLog(@"**** QUERY:%@", sql);
             const char *stmt = [sql UTF8String];
-            sqlite3_prepare_v2(database, stmt,-1, &statement, NULL);
-            if (sqlite3_step(statement) == SQLITE_DONE) {
-                sqlite3_finalize(statement);
-                sqlite3_close(database);
+            sqlite3_prepare_v2(self->database, stmt,-1, &self->statement, NULL);
+            if (sqlite3_step(self->statement) == SQLITE_DONE) {
+                sqlite3_finalize(self->statement);
+                sqlite3_close(self->database);
                 callback(NO);
             }
             else {
-                NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
-                sqlite3_finalize(statement);
-                sqlite3_close(database);
+                NSLog(@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database));
+                sqlite3_finalize(self->statement);
+                sqlite3_close(self->database);
                 callback(YES);
             }
         }
-        sqlite3_close(database);
+        sqlite3_close(self->database);
         callback(YES);
     });
 }
