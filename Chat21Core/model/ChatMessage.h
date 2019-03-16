@@ -44,6 +44,7 @@ static NSString* const MSG_TYPE_TEXT = @"text";
 static NSString* const MSG_TYPE_INFO = @"info";
 static NSString* const MSG_TYPE_DROPBOX = @"dropbox";
 static NSString* const MSG_TYPE_ALFRESCO = @"text"; // era: alfresco
+static NSString* const MSG_TYPE_AUDIO = @"audio";
 static NSString* const MSG_DROPBOX_NAME = @"dropbox_name";
 static NSString* const MSG_DROPBOX_LINK = @"dropbox_link";
 static NSString* const MSG_DROPBOX_SIZE = @"dropbox_size";

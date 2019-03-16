@@ -32,6 +32,12 @@
     return self;
 }
 
+- (void)copyDataTo:(ChatUser*)chatUser {
+    chatUser.firstname = self.firstname;
+    chatUser.lastname = self.lastname;
+    chatUser.imageurl = self.imageurl;
+}
+
 // Fullname custom getter
 - (NSString*) fullname {
     if (!_fullname) {
@@ -94,6 +100,7 @@
     return YES;
 }
 
+/*
 -(NSString *)profileImagePath {
     return [ChatManager profileImagePathOf:self.userId];
 }
@@ -104,6 +111,6 @@
 
 -(NSString *)profileThumbImageURL {
     return [ChatManager profileThumbImageURLOf:self.userId];
-}
+}*/
 
 @end

@@ -7,9 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <NYTPhotoViewer/NYTPhoto.h>
 
-@interface ChatNYTPhoto : NSObject <NYTPhoto>
+@interface ChatNYTPhoto : NSObject
 
 @property (nonatomic) UIImage *image;
 @property (nonatomic) NSData *imageData;

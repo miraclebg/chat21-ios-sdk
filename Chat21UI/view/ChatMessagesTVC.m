@@ -24,8 +24,6 @@
 #import "ChatImageMessageLeftCell.h"
 #import "ChatImageCache.h"
 #import "ChatImageDownloadManager.h"
-#import <NYTPhotoViewer/NYTPhotosViewController.h>
-#import <NYTPhotoViewer/NYTPhotoViewerArrayDataSource.h>
 #import "ChatNYTPhoto.h"
 #import "ChatMessageCell.h"
 #import "ChatStyles.h"
@@ -253,9 +251,11 @@ static NSString *MATCH_TYPE_CHAT_LINK = @"CHATLINK";
     ChatNYTPhoto *photo = [[ChatNYTPhoto alloc] init];
     photo.image = image;
     NSArray *photos = [NSArray arrayWithObjects:photo, nil];
-    NYTPhotoViewerArrayDataSource *dataSource = [[NYTPhotoViewerArrayDataSource alloc] initWithPhotos:photos];
-    NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithDataSource:dataSource];
-    [self presentViewController:photosViewController animated:YES completion:nil];
+
+#warning disabled this
+    /*NYTPhotoViewerArrayDataSource *dataSource = [[NYTPhotoViewerArrayDataSource alloc] initWithPhotos:photos];
+     NYTPhotosViewController *photosViewController = [[NYTPhotosViewController alloc] initWithDataSource:dataSource];
+     [self presentViewController:photosViewController animated:YES completion:nil];*/
 }
 
 -(void)processTapOnTextMessage:(UIGestureRecognizer *)recognizer message:(ChatMessage *)message {

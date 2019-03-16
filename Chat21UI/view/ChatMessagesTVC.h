@@ -8,7 +8,6 @@
 
 #import <UIKit/UIKit.h>
 #import "QBPopupMenu.h"
-#import "NYTPhotosViewController.h"
 
 
 @class ChatMessagesVC;
@@ -18,7 +17,7 @@
 @class ChatImageCache;
 
 @interface ChatMessagesTVC : UITableViewController<UIActionSheetDelegate,QBPopupMenuDelegate>{
-    // <NYTPhotosViewControllerDelegate> for activity
+
 }
 @property (weak, nonatomic) ChatMessagesVC *vc;
 @property (weak, nonatomic) ChatConversationHandler *conversationHandler;
