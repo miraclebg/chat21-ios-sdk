@@ -66,7 +66,6 @@
 -(NSString *)mediaFolderPath;
 +(NSString *)mediaFolderPathOfRecipient:(NSString *)recipiendId;
 -(void)saveImageToRecipientMediaFolderAsPNG:(UIImage *)image imageFileName:(NSString *)imageFileName;
--(void)uploadImage:(UIImage *)image fileName:(NSString *)fileName completion:(void(^)(NSURL *downloadURL, NSError *error)) callback progressCallback:(void(^)(double fraction))progressCallback;
 -(void)updateMessageStatus:(int)status forMessage:(ChatMessage *)message;
 //+(NSMutableDictionary *)firebaseMessageFor:(ChatMessage *)message;
 

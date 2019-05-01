@@ -98,9 +98,6 @@
 -(void)removeInstanceId;
 -(void)loadGroup:(NSString *)group_id completion:(void (^)(ChatGroup* group, BOOL error))callback;
 
--(FIRStorageReference *)uploadProfileImage:(UIImage *)image profileId:(NSString *)profileId completion:(void(^)(NSString *downloadURL, NSError *error))callback progressCallback:(void(^)(double fraction))progressCallback;
--(void)deleteProfileImage:(NSString *)profileId completion:(void(^)(NSError *error))callback;
-
 // profile image
 // paths
 +(NSString *)filePathOfProfile:(NSString *)profileId fileName:(NSString *)fileName;

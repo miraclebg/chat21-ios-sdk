@@ -516,52 +516,6 @@
     }
 }
 
--(void)uploadImage:(UIImage *)image fileName:(NSString *)fileName completion:(void(^)(NSURL *downloadURL, NSError *error))callback progressCallback:(void(^)(double fraction))progressCallback {
-    NSData *data = UIImagePNGRepresentation(image);
-    // Get a reference to the storage service using the default Firebase App
-    FIRStorage *storage = [FIRStorage storage];
-    // Create a root reference
-    FIRStorageReference *storageRef = [storage reference];
-    NSString * uuid = [[NSUUID UUID] UUIDString];
-    NSString *file_path = [[NSString alloc] initWithFormat:@"images/%@.png", uuid];
-    NSLog(@"image remote file path: %@", file_path);
-    // Create a reference to the file you want to upload
-    FIRStorageReference *storeRef = [storageRef child:file_path];
-    // Create file metadata including the content type
-    FIRStorageMetadata *metadata = [[FIRStorageMetadata alloc] init];
-    metadata.contentType = @"image/png";
-    // Upload the file to the path
-    FIRStorageUploadTask *uploadTask = [storeRef putData:data
-                                                 metadata:metadata
-                                               completion:^(FIRStorageMetadata *metadata,
-                                                            NSError *error) {
-                                                   if (error != nil) {
-                                                       NSLog(@"an error occurred!");
-                                                       callback(nil, error);
-                                                   } else {
-//                                                       NSLog(@"Metadata contains file metadata such as size, content-type, and download URL");
-                                                       
-                                                       [storeRef downloadURLWithCompletion:^(NSURL * _Nullable URL, NSError * _Nullable error) {
-                                                           if (error != nil) {
-                                                               NSLog(@"an error occurred! %@", error);
-                                                               callback(nil, error);
-                                                           } else {
-                                                               NSLog(@"Download url: %@", URL);
-                                                               callback(URL, error);
-                                                           }
-                                                       }];
-
-                                                       
-                                                   }
-                                               }];
-    [uploadTask observeStatus:FIRStorageTaskStatusProgress
-                      handler:^(FIRStorageTaskSnapshot *snapshot) {
-                          //                                                      NSLog(@"uploading %@", snapshot);
-                          //                                                      NSLog(@"completion: %f, %lld", snapshot.progress.fractionCompleted, snapshot.progress.completedUnitCount);
-                          progressCallback(snapshot.progress.fractionCompleted);
-                      }];
-}
-
 //-(void)finishedReceivingMessage:(ChatMessage *)message {
 //    NSLog(@"ConversationHandler: Finished receiving message %@ on delegate: %@",message.text, self.delegateView);
 //    if (self.delegateView) {

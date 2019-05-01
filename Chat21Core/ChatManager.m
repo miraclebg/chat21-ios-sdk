@@ -650,57 +650,6 @@ static ChatManager *sharedInstance = nil;
     }
 }
 
--(FIRStorageReference *)uploadProfileImage:(UIImage *)image profileId:(NSString *)profileId completion:(void(^)(NSString *downloadURL, NSError *error))callback progressCallback:(void(^)(double fraction))progressCallback {
-    NSData *data = UIImageJPEGRepresentation(image, 0.9);
-//    NSData *data = UIImagePNGRepresentation(image);
-    // Get a reference to the storage service using the default Firebase App
-    FIRStorage *storage = [FIRStorage storage];
-    // Create a root reference
-    FIRStorageReference *storageRef = [storage reference];
-    NSString *file_path = [ChatManager profileImagePathOf:profileId]; //self.loggedUser.profileImagePath;
-    NSLog(@"profile image remote file path: %@", file_path);
-    // Create a reference to the file you want to upload
-    FIRStorageReference *storeRef = [storageRef child:file_path];
-    NSLog(@"StoreRef: %@", storeRef);
-    // Create file metadata including the content type
-    FIRStorageMetadata *metadata = [[FIRStorageMetadata alloc] init];
-    metadata.contentType = @"image/jpg";
-    // Upload the file to the path
-    [storeRef putData:data metadata:metadata completion:^(FIRStorageMetadata *metadata, NSError *error) {
-        if (error != nil) {
-            NSLog(@"an error occurred! %@", error);
-            callback(nil, error);
-        } else {
-            NSString *url = [ChatManager profileImageURLOf:profileId];
-            NSLog(@"Download url: %@", url);
-            callback(url, nil);
-        }
-    }];
-    return storeRef;
-}
-
--(void)deleteProfileImage:(NSString *)profileId completion:(void(^)(NSError *error))callback {
-//    NSString *baseURL = [ChatUtil profileBaseURL:profileId];
-//    NSLog(@"baseURL to delete: %@", baseURL);
-//    NSURL *url = [NSURL URLWithString:baseURL];
-//    NSString *cache_key = [self.imageCache urlAsKey:url];
-//    NSLog(@"baseURL key: %@", cache_key);
-//    [self.imageCache deleteFilesFromCacheStartingWith:cache_key];
-    [self.imageCache deleteFilesFromDiskCacheOfProfile:profileId];
-    [ChatService deleteProfilePhoto:profileId completion:^(NSError *error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (error) {
-                NSLog(@"Deletion of profile photo of %@ ended with error: %@", profileId,  error);
-                callback(error);
-            }
-            else {
-                NSLog(@"Profile photo of %@ successfully deleted.", profileId);
-                callback(nil);
-            }
-        });
-    }];
-}
-
 // **** PROFILE IMAGE URL ****
 
 static NSString *PROFILE_PHOTO_NAME = @"photo.jpg";

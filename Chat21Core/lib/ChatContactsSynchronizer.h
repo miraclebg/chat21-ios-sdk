@@ -14,22 +14,22 @@
 
 @interface ChatContactsSynchronizer : NSObject
 
-@property (strong, nonatomic) ChatUser * _Nullable loggeduser;
-@property (nonatomic, strong) FIRDatabaseReference * _Nullable rootRef;
-@property (strong, nonatomic) NSString * _Nullable tenant;
-@property (strong, nonatomic) FIRDatabaseReference * _Nullable contactsRef;
+@property (strong, nonatomic) ChatUser * loggeduser;
+@property (nonatomic, strong) FIRDatabaseReference * rootRef;
+@property (strong, nonatomic) NSString * tenant;
+@property (strong, nonatomic) FIRDatabaseReference * contactsRef;
 @property (assign, nonatomic) FIRDatabaseHandle contact_ref_handle_added;
 @property (assign, nonatomic) FIRDatabaseHandle contact_ref_handle_changed;
 @property (assign, nonatomic) FIRDatabaseHandle contact_ref_handle_removed;
-@property (strong, nonatomic) NSTimer * _Nullable synchTimer;
+@property (strong, nonatomic) NSTimer * synchTimer;
 @property (assign, nonatomic) BOOL synchronizing;
-@property (strong, nonnull) NSMutableArray<id<ChatSynchDelegate>> *synchSubscribers;
+@property (strong) NSMutableArray<id<ChatSynchDelegate>> *synchSubscribers;
 
 -(id)initWithTenant:(NSString *)tenant user:(ChatUser *)user;
 -(void)startSynchro;
 //-(void)stopSynchro;
 //+(void)insertOrUpdateContactOnDB:(ChatUser *)user;
-+(ChatUser *_Nullable)contactFromDictionaryFactory:(NSDictionary *)snapshot;
++(ChatUser *)contactFromDictionaryFactory:(NSDictionary *)snapshot;
 -(void)dispose;
 -(void)addSynchSubscriber:(id<ChatSynchDelegate>)subscriber;
 -(void)removeSynchSubscriber:(id<ChatSynchDelegate>)subscriber;
