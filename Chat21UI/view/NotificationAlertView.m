@@ -8,6 +8,7 @@
 
 #import "NotificationAlertView.h"
 #import "ChatManager.h"
+#import "defines.h"
 
 @interface NotificationAlertView () {
     SystemSoundID soundID;
@@ -35,6 +36,13 @@
     UIWindow *window = [[UIApplication sharedApplication] keyWindow];
     float alert_width = window.frame.size.width;
     UIWindow *notificationAlertWindow = [[UIWindow alloc] initWithFrame:CGRectMake(0, -alert_height, alert_width, alert_height)];
+    
+    /*CGFloat y = 0;
+    
+    if (IS_IPHONE_X) {
+        y = 20.0f;
+    }*/
+    
     self.frame = CGRectMake(0, 0, alert_width, alert_height);
     self.myWindow = notificationAlertWindow;
     [notificationAlertWindow addSubview:self];
