@@ -11,7 +11,7 @@
 #import "ChatUtil.h"
 #import "ChatManager.h"
 #import "ChatContactsDB.h"
-@import Firebase;
+#import <Firebase/Firebase.h>
 
 @interface ChatContactsSynchronizer () {
 //    dispatch_queue_t serialDatabaseQueue;

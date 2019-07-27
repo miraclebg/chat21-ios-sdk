@@ -25,8 +25,7 @@
 #import "ChatMessage.h"
 #import "ChatService.h"
 #import "ChatDiskImageCache.h"
-
-@import Firebase;
+#import <Firebase/Firebase.h>
 
 static ChatManager *sharedInstance = nil;
 

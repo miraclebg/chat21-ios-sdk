@@ -8,8 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "ChatEventType.h"
-
-@import Firebase;
+#import <Firebase/Firebase.h>
 
 @interface ChatConnectionStatusHandler : NSObject
 

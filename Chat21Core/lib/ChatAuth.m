@@ -8,7 +8,7 @@
 
 #import "ChatAuth.h"
 #import "ChatUser.h"
-@import Firebase;
+#import <Firebase/Firebase.h>
 
 @implementation ChatAuth
 

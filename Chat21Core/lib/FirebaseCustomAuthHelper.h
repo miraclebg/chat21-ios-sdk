@@ -7,9 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Firebase/Firebase.h>
 
-@import Firebase;
-//@class Firebase;
 @class FAuthData;
 
 @interface FirebaseCustomAuthHelper : NSObject

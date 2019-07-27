@@ -11,8 +11,7 @@
 #import "ChatUser.h"
 #import "ChatContactsDB.h"
 #import "ChatManager.h"
-
-@import Firebase;
+#import <Firebase/Firebase.h>
 
 @implementation ChatGroup
 

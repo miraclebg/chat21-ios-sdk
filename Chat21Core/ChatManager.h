@@ -7,8 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
-@import Firebase;
+#import <Firebase/Firebase.h>
 
 @class ChatConversationHandler;
 @class ChatConversationsHandler;

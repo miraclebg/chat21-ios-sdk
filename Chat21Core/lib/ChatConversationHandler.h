@@ -8,8 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import "ChatEventType.h"
-
-@import Firebase;
+#import <Firebase/Firebase.h>
+#import <UIKit/UIKit.h>
 
 @class FAuthData;
 @class FirebaseCustomAuthHelper;

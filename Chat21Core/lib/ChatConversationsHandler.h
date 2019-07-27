@@ -8,8 +8,7 @@
 #import <Foundation/Foundation.h>
 //#import "SHPConversationsViewDelegate.h"
 #import "ChatEventType.h"
-
-@import Firebase;
+#import <Firebase/Firebase.h>
 
 @class ChatUser;
 @class ChatConversation;

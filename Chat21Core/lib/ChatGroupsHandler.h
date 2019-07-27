@@ -8,8 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "ChatGroupsSubscriber.h"
-
-@import Firebase;
+#import <Firebase/Firebase.h>
 
 @class FirebaseCustomAuthHelper;
 @class Firebase;

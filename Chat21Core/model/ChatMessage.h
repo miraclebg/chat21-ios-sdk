@@ -7,6 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Firebase/Firebase.h>
+#import <UIKit/UIKit.h>
+
 @class ChatMessageMetadata;
 
 static int const MSG_STATUS_FAILED = -100;
@@ -53,8 +56,6 @@ static NSString* const MSG_FIELD_METADATA = @"metadata";
 static NSString* const MSG_METADATA_ATTACHMENT_SRC = @"src";
 static NSString* const MSG_METADATA_IMAGE_WIDTH = @"width";
 static NSString* const MSG_METADATA_IMAGE_HEIGHT = @"height";
-
-@import Firebase;
 
 //@class Firebase;
 @class FDataSnapshot;

@@ -7,7 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-@import Firebase;
+#import <Firebase/Firebase.h>
+
 @class ChatUser;
 
 @interface ChatAuth : NSObject

@@ -7,13 +7,13 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Firebase/Firebase.h>
+#import <UIKit/UIKit.h>
 
 @class Firebase;
 @class ChatNotificationView;
 @class ChatUser;
 @class ChatDiskImageCache;
-
-@import Firebase;
 
 @interface ChatUtil : NSObject
 

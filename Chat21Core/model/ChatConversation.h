@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <Firebase/Firebase.h>
 
 static int const CONV_STATUS_FAILED = -1000;
 static int const CONV_STATUS_JUST_CREATED = -900; // for group management
@@ -27,7 +28,6 @@ static NSString* const CONV_CHANNEL_TYPE_KEY = @"channel_type";
 static NSString* const CONV_STATUS_KEY = @"status";
 static NSString* const CONV_ATTRIBUTES_KEY = @"attributes";
 
-@import Firebase;
 @class ChatUser;
 
 //@class Firebase;

@@ -15,7 +15,7 @@ static NSString* const GROUP_NAME = @"name";
 static NSString* const GROUP_MEMBERS = @"members";
 static NSString* const GROUP_ICON_ID = @"iconID";
 
-@import Firebase;
+#import "Firebase.h"
 
 @class FDataSnapshot;
 @class HelloApplicationContext;
