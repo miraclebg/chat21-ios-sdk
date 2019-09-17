@@ -82,6 +82,8 @@ static ChatGroupsDB *sharedInstance = nil;
             }
             
             sqlite3_close(database);
+            database = nil;
+            
             return  isSuccess;
         }
         else {
@@ -174,18 +176,26 @@ static ChatGroupsDB *sharedInstance = nil;
         
         if (sqlite3_step(statement) == SQLITE_DONE) {
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
+            
             return YES;
         }
         else {
             NSLog(@"Error on insertGroup.");
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return NO;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return NO;
 }
 
@@ -207,18 +217,28 @@ static ChatGroupsDB *sharedInstance = nil;
         
         if (sqlite3_step(statement) == SQLITE_DONE) {
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
+            
             return YES;
         }
         else {
             NSLog(@"Error while updating group.");
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
+            
             return NO;
         }
     }
     sqlite3_close(database);
+    database = nil;
+    
     return NO;
 }
 
@@ -237,15 +257,23 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
                     [groups addObject:group];
                 }
                 sqlite3_finalize(self->statement);
+                statement = nil;
+                
                 sqlite3_close(self->database);
+                database = nil;
+                
             } else {
                 NSLog(@"**** PROBLEMS WHILE QUERYING GROUPS...");
                 NSLog(@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database));
                 sqlite3_finalize(self->statement);
+                statement = nil;
+                
                 sqlite3_close(self->database);
             }
         }
         sqlite3_close(self->database);
+        database = nil;
+        
         callback(groups);
     });
 }
@@ -265,15 +293,25 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
                 [groups addObject:group];
             }
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
+            
         } else {
             NSLog(@"**** PROBLEMS WHILE QUERYING GROUPS...");
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
+            
         }
     }
     sqlite3_close(database);
+    database = nil;
+    
     return groups;
 }
 
@@ -304,8 +342,12 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
         }
         sqlite3_finalize(statement);
+    statement = nil;
+    
     }
     sqlite3_close(database);
+    database = nil;
+    
     return group;
 }
 
@@ -320,17 +362,27 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
             sqlite3_prepare_v2(self->database, stmt,-1, &self->statement, NULL);
             if (sqlite3_step(self->statement) == SQLITE_DONE) {
                 sqlite3_finalize(self->statement);
+                statement = nil;
+                
                 sqlite3_close(self->database);
+                database = nil;
+                
                 callback(NO);
             }
             else {
                 NSLog(@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database));
                 sqlite3_finalize(self->statement);
+                statement = nil;
+                
                 sqlite3_close(self->database);
+                database = nil;
+                
                 callback(YES);
             }
         }
         sqlite3_close(self->database);
+        database = nil;
+        
         callback(YES);
     });
 }

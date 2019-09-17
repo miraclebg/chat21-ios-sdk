@@ -96,7 +96,10 @@ static ChatDB *sharedInstance = nil;
                 if (self.logQuery) {NSLog(@"Table conversations successfully created.");}
                 [self upgradeSchema:dbpath];
             }
+            
             sqlite3_close(database);
+            database = nil;
+            
             return  isSuccess;
         }
         else {
@@ -138,6 +141,7 @@ static ChatDB *sharedInstance = nil;
             if (self.logQuery) {NSLog(@"Table conversations successfully altered.");}
         }
         sqlite3_close(database);
+        database = nil;
     }
     else {
         if (self.logQuery) {NSLog(@"Failed to alter table messages.");}
@@ -200,17 +204,24 @@ static ChatDB *sharedInstance = nil;
         
         if (sqlite3_step(statement) == SQLITE_DONE) {
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return YES;
         }
         else {
             if (self.logQuery) {NSLog(@"Insert message, database error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));}
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return NO;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return NO;
 }
 
@@ -224,15 +235,20 @@ static ChatDB *sharedInstance = nil;
         if (sqlite3_step(statement) == SQLITE_DONE) {
             sqlite3_finalize(statement);
             sqlite3_close(database);
+            database = nil;
             return YES;
         }
         else {
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return NO;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return NO;
 }
 
@@ -250,16 +266,21 @@ static ChatDB *sharedInstance = nil;
         if (sqlite3_step(statement) == SQLITE_DONE) {
             sqlite3_finalize(statement);
             sqlite3_close(database);
+            database = nil;
             return YES;
         }
         else {
             if (self.logQuery) {NSLog(@"Update message status/imageURL, database error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));}
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return NO;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return NO;
 }
 
@@ -279,14 +300,19 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
             }
             sqlite3_finalize(statement);
             sqlite3_close(database);
+            database = nil;
         } else {
             NSLog(@"**** getAllMessages. PROBLEMS WHILE QUERYING MESSAGES...");
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return messages;
 }
 
@@ -304,14 +330,19 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
             }
             sqlite3_finalize(statement);
             sqlite3_close(database);
+            database = nil;
         } else {
             NSLog(@"getAllMessagesForConversation. **** PROBLEMS WHILE QUERYING MESSAGES...");
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return messages;
 }
 
@@ -333,15 +364,22 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
                 message = [self messageFromStatement:statement];
             }
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
         } else {
             NSLog(@"**** getMessageById. PROBLEMS WHILE QUERYING MESSAGES...");
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return message;
 }
 
@@ -475,16 +513,23 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
         sqlite3_prepare_v2(database, stmt,-1, &statement, NULL);
         if (sqlite3_step(statement) == SQLITE_DONE) {
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return YES;
         }
         else {
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return NO;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return NO;
 }
 
@@ -531,7 +576,10 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
             NSLog(@"Conversation successfully inserted.");
 //            sqlite3_reset(statement);
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return YES;
         }
         else {
@@ -539,11 +587,15 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
 //            sqlite3_reset(statement);
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return NO;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return NO;
 }
 
@@ -573,17 +625,24 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
         
         if (sqlite3_step(statement) == SQLITE_DONE) {
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return YES;
         }
         else {
             NSLog(@"Error while updating conversation. Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return NO;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return NO;
 }
 
@@ -601,15 +660,22 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
                 [convs addObject:conv];
             }
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
         } else {
             NSLog(@"**** ERROR: PROBLEMS WHILE QUERYING CONVERSATIONS...");
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return convs;
 }
 
@@ -628,15 +694,22 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
                 [convs addObject:conv];
             }
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
         } else {
             NSLog(@"**** ERROR: PROBLEMS WHILE QUERYING CONVERSATIONS...");
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return convs;
 }
 
@@ -659,7 +732,10 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
         }
     }
     sqlite3_finalize(statement);
+    statement = nil;
+    
     sqlite3_close(database);
+    database = nil;
     return conv;
 }
 
@@ -673,18 +749,25 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
         sqlite3_prepare_v2(database, stmt,-1, &statement, NULL);
         if (sqlite3_step(statement) == SQLITE_DONE) {
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return YES;
         }
         else {
             NSLog(@"Error on removeConversation.");
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
             sqlite3_finalize(statement);
+            statement = nil;
+            
             sqlite3_close(database);
+            database = nil;
             return NO;
         }
     }
     sqlite3_close(database);
+    database = nil;
     return NO;
 }
 

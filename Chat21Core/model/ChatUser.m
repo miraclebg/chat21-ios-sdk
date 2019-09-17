@@ -36,6 +36,8 @@
     chatUser.firstname = self.firstname;
     chatUser.lastname = self.lastname;
     chatUser.imageurl = self.imageurl;
+    chatUser.profileThumbImageURL = self.profileThumbImageURL;
+    chatUser.profileImageURL = self.profileImageURL;
 }
 
 // Fullname custom getter
