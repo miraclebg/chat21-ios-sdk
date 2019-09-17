@@ -33,6 +33,7 @@ static NSString* const FIREBASE_USER_EMAIL = @"email";
 
 -(NSDictionary *)asDictionary;
 -(id)init:(NSString *)userid fullname:(NSString *)fullname;
+-(id)init:(NSString *)userid fullname:(NSString *)fullname imageUrl:(NSString*)imageUrl;
 
 - (void)copyDataTo:(ChatUser*)chatUser;
 

@@ -25,8 +25,19 @@
     if (self = [super init])  {
         self.imageurl = @"";
         self.lastname = @"";
-        self.firstname = @"";
+        self.firstname = fullname;
         _fullname = fullname;
+        self.userId = userid;
+    }
+    return self;
+}
+
+- (id)init:(NSString *)userid fullname:(NSString *)fullname imageUrl:(NSString*)imageUrl {
+    if (self = [super init])  {
+        self.imageurl = imageUrl;
+        self.lastname = @"";
+        self.firstname = fullname;
+        self.fullname = fullname;
         self.userId = userid;
     }
     return self;
