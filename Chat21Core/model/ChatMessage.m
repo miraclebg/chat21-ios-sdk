@@ -68,15 +68,15 @@
 
 -(NSString *)imagePathFromMediaFolder {
     NSString *mediaFolderPath = [ChatConversationHandler mediaFolderPathOfRecipient:self.recipient];
-    NSLog(@"mediaFolderPath: %@",mediaFolderPath);
+    //NSLog(@"mediaFolderPath: %@",mediaFolderPath);
     NSString *imagePath = [mediaFolderPath stringByAppendingPathComponent:self.imageFilename];
-    NSLog(@"imagePath: %@",imagePath);
+    //NSLog(@"imagePath: %@",imagePath);
     return imagePath;
 }
 
 -(UIImage *)imageFromMediaFolder {
     NSString *imagePath = [self imagePathFromMediaFolder];
-//    NSLog(@"imagePath: %@", imagePath);
+//    //NSLog(@"imagePath: %@", imagePath);
     UIImage *image = [UIImage imageNamed:imagePath];
     return image;
 //    NSDictionary *dict = [[NSMutableDictionary alloc] init];
@@ -97,9 +97,9 @@
     data[MSG_FIELD_RECIPIENT_FULLNAME] = self.recipientFullName;
     data[MSG_FIELD_CHANNEL_TYPE] = self.channel_type;
     data[MSG_FIELD_LANG] = self.lang;
-//    NSLog(@"time original: %@", self.date);
+//    //NSLog(@"time original: %@", self.date);
     long long milliseconds = (long long)([self.date timeIntervalSince1970] * 1000.0);
-//    NSLog(@"time converted millis: %lld", milliseconds);
+//    //NSLog(@"time converted millis: %lld", milliseconds);
     data[MSG_FIELD_TIMESTAMP] = @(milliseconds);
     data[MSG_FIELD_STATUS] = @(self.status);
     data[MSG_FIELD_TYPE] = self.mtype;
@@ -117,7 +117,7 @@
         NSError * err;
         NSData * jsonData = [NSJSONSerialization dataWithJSONObject:self.snapshot options:0 error:&err];
         if (err) {
-            NSLog(@"Error: %@", err);
+            //NSLog(@"Error: %@", err);
         }
         json = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     }
@@ -126,12 +126,12 @@
 
 //-(NSString *)attributesAsJSONString {
 //    NSString * json = nil;
-////    NSLog(@"valid json? %d", [NSJSONSerialization isValidJSONObject:self.attributes]);
+////    //NSLog(@"valid json? %d", [NSJSONSerialization isValidJSONObject:self.attributes]);
 //    if (self.attributes && [self.attributes isKindOfClass:[NSDictionary class]]) {
 //        NSError * err;
 //        NSData * jsonData = [NSJSONSerialization dataWithJSONObject:self.attributes options:0 error:&err];
 //        if (err) {
-//            NSLog(@"Error: %@", err);
+//            //NSLog(@"Error: %@", err);
 //        }
 //        json = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
 //    }
@@ -162,7 +162,7 @@
     }
     NSString *text = snapshot.value[MSG_FIELD_TEXT];
 //    if ([text hasPrefix:@"Image:"]) {
-//        NSLog(@"STOP: %@" , text);
+//        //NSLog(@"STOP: %@" , text);
 //    }
     NSString *sender = snapshot.value[MSG_FIELD_SENDER];
     NSString *senderFullname = snapshot.value[MSG_FIELD_SENDER_FULLNAME];
@@ -211,7 +211,7 @@
 }
 
 -(void)setCorrectText:(ChatMessage *)message text:(NSString *)text {
-//    NSLog(@"setting text for: %@", message.text);
+//    //NSLog(@"setting text for: %@", message.text);
     // text validation
     if (!text) { // never nil
         text = @"";

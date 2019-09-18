@@ -26,7 +26,7 @@
 */
 
 - (void)initViewWithHeight:(float)height {
-    NSLog(@"NotificationAlertVC loaded.");
+    //NSLog(@"NotificationAlertVC loaded.");
     UITapGestureRecognizer *singleFingerTap =
     [[UITapGestureRecognizer alloc] initWithTarget:self
                                             action:@selector(handleSingleTap:)];
@@ -62,7 +62,7 @@
 //The event handling method
 - (void)handleSingleTap:(UITapGestureRecognizer *)recognizer {
     //    CGPoint location = [recognizer locationInView:[recognizer.view superview]];
-    NSLog(@"View tapped!! Moving to conversation tab.");
+    //NSLog(@"View tapped!! Moving to conversation tab.");
     [self animateClose];
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(didTapView:)]) {
@@ -78,9 +78,9 @@
 //        ChatRootNC *nc = [controllers objectAtIndex:chat_tab_index];
 //        ChatConversationsVC *vc = nc.viewControllers[0];
 //        if (vc.presentedViewController) {
-//            NSLog(@"THERE IS A MODAL PRESENTED! NOT SWITCHING TO ANY CONVERSATION VIEW.");
+//            //NSLog(@"THERE IS A MODAL PRESENTED! NOT SWITCHING TO ANY CONVERSATION VIEW.");
 //        } else {
-//            NSLog(@"SWITCHING TO CONVERSATION VIEW. DISABLED.");
+//            //NSLog(@"SWITCHING TO CONVERSATION VIEW. DISABLED.");
 //            // IF YOU ENABLE THIS IS MANDATORY TO FIND A WAY TO DISMISS OR HANDLE THE CURRENT MODAL VIEW
 //            //            [nc popToRootViewControllerAnimated:NO];
 //            //            [vc openConversationWithRecipient:self.sender];
@@ -98,13 +98,13 @@ static float showTime = 4.0;
 //    [window setWindowLevel:UIWindowLevelStatusBar+1];
     
     //    CGRect rect = self.closeButton.frame;
-    //    NSLog(@"....close x:%f y:%f w:%f h:%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+    //    //NSLog(@"....close x:%f y:%f w:%f h:%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
     //    CGRect rectimg = self.userImage.frame;
-    //    NSLog(@"....image x:%f y:%f w:%f h:%f", rectimg.origin.x, rectimg.origin.y, rectimg.size.width, rectimg.size.height);
+    //    //NSLog(@"....image x:%f y:%f w:%f h:%f", rectimg.origin.x, rectimg.origin.y, rectimg.size.width, rectimg.size.height);
     //    float view_width = self.view.frame.size.width;
     //    float close_button_width = self.closeButton.frame.size.width;
-    //    NSLog(@"....view_width: %f", view_width);
-    //    NSLog(@"....close_button_width: %f", close_button_width);
+    //    //NSLog(@"....view_width: %f", view_width);
+    //    //NSLog(@"....close_button_width: %f", close_button_width);
     
     
     
@@ -149,7 +149,7 @@ static float showTime = 4.0;
 }
 
 - (IBAction)closeAction:(id)sender {
-    NSLog(@"Closing alert");
+    //NSLog(@"Closing alert");
     [self animateClose];
 }
 

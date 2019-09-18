@@ -71,7 +71,7 @@
                 // when I disconnect, update the last time I was seen online
                 [lastOnlineRef onDisconnectSetValue:[FIRServerValue timestamp]];
             } else {
-                NSLog(@"self.deviceConnectionRef already set. Cannot be set again.");
+                //NSLog(@"self.deviceConnectionRef already set. Cannot be set again.");
             }
         }
     }];
@@ -82,7 +82,7 @@
     FIRDatabaseReference *onlineRef = [ChatPresenceHandler onlineRefForUser:userid];
     [onlineRef observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
         if(snapshot.exists) {
-//            NSLog(@"ONLINE: %@", snapshot);
+//            //NSLog(@"ONLINE: %@", snapshot);
             callback(YES);
 //            self.online = YES;
 //            [self onlineStatus];

@@ -156,8 +156,8 @@
 
 +(CGSize)fitSizeWidth:(CGSize)size intoSize:(CGSize)newSize {
     CGSize scaledSize = size;
-    //NSLog(@"scaledSize NW: %f - %f",scaledSize.width, scaledSize.height);
-    //NSLog(@"newSize NW: %f - %f",newSize.width, newSize.height);
+    ////NSLog(@"scaledSize NW: %f - %f",scaledSize.width, scaledSize.height);
+    ////NSLog(@"newSize NW: %f - %f",newSize.width, newSize.height);
     if(scaledSize.height<=0){
         scaledSize.width = newSize.width;
         scaledSize.height = newSize.height;
@@ -165,7 +165,7 @@
     else{
         scaledSize.height = size.height * newSize.width / size.width;
         scaledSize.width = newSize.width;
-        //NSLog(@"scaledSize NW: %f - %f",scaledSize.width, scaledSize.height);
+        ////NSLog(@"scaledSize NW: %f - %f",scaledSize.width, scaledSize.height);
         if (scaledSize.height > newSize.height) {
             //       scaledSize.height = newSize.height;
             //        vScaleFactor = newSize.height / scaledSize.height;
@@ -174,7 +174,7 @@
             //        scaledSize.width = scaledSize.width * vScaleFactor;
         }
     }
-    //NSLog(@":::::: scaledSize :::::: %f - %f", scaledSize.width, scaledSize.height);
+    ////NSLog(@":::::: scaledSize :::::: %f - %f", scaledSize.width, scaledSize.height);
     return scaledSize;
 }
 
@@ -469,7 +469,7 @@
 //}
 
 +(UIImage *)circleImage:(UIImage *)image {
-    //    NSLog(@"ORIGINAL SIZE: W: %f H: %f", image.size.width, image.size.height);
+    //    //NSLog(@"ORIGINAL SIZE: W: %f H: %f", image.size.width, image.size.height);
     UIImage* circle_image;
     float min_side = image.size.height;
     if (image.size.width < min_side) {
@@ -480,7 +480,7 @@
     
     //    CGFloat size = radius;
     //    image = [SHPImageUtil squareImageFromImage:image scaledToSize:size];
-    //    NSLog(@"NEW SIZE w: %f h: %f", image.size.width, image.size.height);
+    //    //NSLog(@"NEW SIZE w: %f h: %f", image.size.width, image.size.height);
     
     CGRect rect = CGRectMake(0, 0, radius, radius);
     
@@ -528,21 +528,21 @@
 //        NSError *error;
 //        [filemgr createDirectoryAtPath:folder_path withIntermediateDirectories:YES attributes:nil error:&error];
 //        if (error) {
-//            NSLog(@"error creating cache folder (%@): %@", folder_path, error);
+//            //NSLog(@"error creating cache folder (%@): %@", folder_path, error);
 //        }
 //    }
-//    NSLog(@"Image path: %@", image_path);
+//    //NSLog(@"Image path: %@", image_path);
 //    NSError *error;
 //    [UIImageJPEGRepresentation(image, 0.9) writeToFile:image_path options:NSDataWritingAtomic error:&error];
 //    if (error) {
-//        NSLog(@"Error saving image to cache path? (%@) - %@",image_path, error);
+//        //NSLog(@"Error saving image to cache path? (%@) - %@",image_path, error);
 //    }
 //    // test
 //    if ([filemgr fileExistsAtPath: image_path ] == NO) {
-//        NSLog(@"Error. Image not saved.");
+//        //NSLog(@"Error. Image not saved.");
 //    }
 //    else {
-//        NSLog(@"Image saved to cache path.");
+//        //NSLog(@"Image saved to cache path.");
 //    }
 //}
 
@@ -554,27 +554,27 @@
         NSError *error;
         [filemgr createDirectoryAtPath:folder_path withIntermediateDirectories:YES attributes:nil error:&error];
         if (error) {
-            NSLog(@"error creating cache folder (%@): %@", folder_path, error);
+            //NSLog(@"error creating cache folder (%@): %@", folder_path, error);
         }
     }
-    NSLog(@"Image path: %@", image_path);
+    //NSLog(@"Image path: %@", image_path);
     NSError *error;
     [UIImagePNGRepresentation(image) writeToFile:image_path options:NSDataWritingAtomic error:&error];
     if (error) {
-        NSLog(@"Error saving image to cache path? (%@) - %@",image_path, error);
+        //NSLog(@"Error saving image to cache path? (%@) - %@",image_path, error);
     }
     // test
     if ([filemgr fileExistsAtPath: image_path ] == NO) {
-        NSLog(@"Error. Image not saved.");
+        //NSLog(@"Error. Image not saved.");
     }
     else {
-        NSLog(@"Image saved to cache path.");
+        //NSLog(@"Image saved to cache path.");
     }
     //    NSArray *directoryList = [filemgr contentsOfDirectoryAtPath:folder_path error:nil];
     //    for (id file in directoryList) {
-    //        NSLog(@"Image: %@", file);
+    //        //NSLog(@"Image: %@", file);
     //    }
-    //    NSLog(@"End list.");
+    //    //NSLog(@"End list.");
 }
 
 +(void)rotateImageView:(UIImageView *)imageView angle:(float)angle{

@@ -35,7 +35,7 @@
     FIRDatabaseReference *rootRef = [[FIRDatabase database] reference];
     NSString *groups_path = [ChatUtil groupsPath];
     FIRDatabaseReference *group_ref = [[rootRef child:groups_path] child:self.groupId];
-    NSLog(@"group_ref %@", group_ref);
+    //NSLog(@"group_ref %@", group_ref);
     return group_ref;
 }
 
@@ -167,7 +167,7 @@
 
 //-(BOOL)completeData {
 //    BOOL complete = (self.members != nil);
-//    NSLog(@"complete: %d", complete);
+//    //NSLog(@"complete: %d", complete);
 //    return complete;
 //}
 

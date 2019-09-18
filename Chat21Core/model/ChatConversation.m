@@ -41,7 +41,7 @@
     }
     FIRDatabaseReference *rootRef = [[FIRDatabase database] reference];
     FIRDatabaseReference *ref = [[rootRef child: conversations_path] child:self.conversationId];
-    NSLog(@"Conversation ref: %@", ref);
+    //NSLog(@"Conversation ref: %@", ref);
     return ref;
 }
 
@@ -99,7 +99,7 @@
 }
 
 -(BOOL)isDirect {
-//    NSLog(@"conv: %@, self.channel_type: %@",self.last_message_text, self.channel_type);
+//    //NSLog(@"conv: %@, self.channel_type: %@",self.last_message_text, self.channel_type);
     return ([self.channel_type isEqualToString:MSG_CHANNEL_TYPE_DIRECT] || self.channel_type == nil) ? YES : NO;
 }
 

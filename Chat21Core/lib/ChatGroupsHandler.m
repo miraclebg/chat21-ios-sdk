@@ -46,7 +46,7 @@
 }
 
 -(void)notifySubscribers:(ChatGroup *)group {
-    NSLog(@"ChatConversationHandler: This group was added or changed: %@. Notifying to subscribers...", group.name);
+    //NSLog(@"ChatConversationHandler: This group was added or changed: %@. Notifying to subscribers...", group.name);
     for (id<ChatGroupsSubscriber> subscriber in self.subscribers) {
         [subscriber groupAddedOrChanged:group];
     }
@@ -54,7 +54,7 @@
 
 //-(id)initWithFirebaseRef:(NSString *)firebaseRef tenant:(NSString *)tenant user:(SHPUser *)user {
 //    if (self = [super init]) {
-//        NSLog(@"OOO");
+//        //NSLog(@"OOO");
 //        self.firebaseRef = firebaseRef;
 //        self.tenant = tenant;
 //        self.loggeduser = user;
@@ -77,24 +77,24 @@
     self.groupsRef = [rootRef child:groups_path];
     
     self.groups_ref_handle_added = [self.groupsRef observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot *snapshot) {
-        NSLog(@"NEW GROUP SNAPSHOT: %@", snapshot);
+        //NSLog(@"NEW GROUP SNAPSHOT: %@", snapshot);
         ChatGroup *group = [ChatManager groupFromSnapshotFactory:snapshot];
         [self insertOrUpdateGroup:group completion:^{
             // nothing
         }];
     } withCancelBlock:^(NSError *error) {
-        NSLog(@"%@", error.description);
+        //NSLog(@"%@", error.description);
     }];
     
     self.groups_ref_handle_changed =
     [self.groupsRef observeEventType:FIRDataEventTypeChildChanged withBlock:^(FIRDataSnapshot *snapshot) {
-        NSLog(@"UPDATED GROUP SNAPSHOT: %@", snapshot);
+        //NSLog(@"UPDATED GROUP SNAPSHOT: %@", snapshot);
         ChatGroup *group = [ChatManager groupFromSnapshotFactory:snapshot];
         [self insertOrUpdateGroup:group completion:^{
             // nothing
         }];
     } withCancelBlock:^(NSError *error) {
-        NSLog(@"%@", error.description);
+        //NSLog(@"%@", error.description);
     }];
 }
 
@@ -103,32 +103,32 @@
         [self.groups setObject:group forKey:group.groupId];
     }
     else {
-        NSLog(@"ERROR: CAN'T INSERT A GROUP WITH NIL ID");
+        //NSLog(@"ERROR: CAN'T INSERT A GROUP WITH NIL ID");
     }
 }
 
 //+(void)createGroupFromPushNotification:(ChatGroup *)group {
-////    NSLog(@"Groups in memory before push:");
+////    //NSLog(@"Groups in memory before push:");
 ////    [self printAllGroupsInMemory];
 ////    [self insertInMemory:group];
-////    NSLog(@"Groups in memory after push:");
+////    //NSLog(@"Groups in memory after push:");
 ////    [self printAllGroupsInMemory];
 //    ChatGroupsDB *db = [ChatGroupsDB getSharedInstance];
 //    // TEST
 ////    NSArray *groups_before = [db getAllGroupsForUser:[ChatManager getInstance].loggedUser.userId];
-////    NSLog(@"GROUPS BEFORE PUSH");
+////    //NSLog(@"GROUPS BEFORE PUSH");
 ////    for (ChatGroup *g in groups_before) {
-////        NSLog(@"name: %@ [%@]", g.name, g.groupId);
+////        //NSLog(@"name: %@ [%@]", g.name, g.groupId);
 ////    }
 //    
 //    [db insertGroupOnlyIfNotExistsSyncronized:group completion:^{
 //        // TODO print all groups from db before
-//        NSLog(@"Group %@ [%@] created by push notification", group.name, group.groupId);
+//        //NSLog(@"Group %@ [%@] created by push notification", group.name, group.groupId);
 //        // TODO print all groups from db after
-////        NSLog(@"GROUPS AFTER PUSH");
+////        //NSLog(@"GROUPS AFTER PUSH");
 ////        NSArray *groups_after = [db getAllGroupsForUser:[ChatManager getInstance].loggedUser.userId];
 ////        for (ChatGroup *g in groups_after) {
-////            NSLog(@"name: %@ [%@]", g.name, g.groupId);
+////            //NSLog(@"name: %@ [%@]", g.name, g.groupId);
 ////        }
 //    }];
 //}
@@ -137,7 +137,7 @@
 -(void)printAllGroupsInMemory {
     for (id k in self.groups) {
         ChatGroup *g = self.groups[k];
-        NSLog(@"group id: %@, name: %@, members: %@", g.groupId, g.name, [ChatGroup membersDictionary2String:g.members]);
+        //NSLog(@"group id: %@, name: %@, members: %@", g.groupId, g.name, [ChatGroup membersDictionary2String:g.members]);
     }
 }
 
@@ -146,7 +146,7 @@
 }
 
 -(void)insertOrUpdateGroup:(ChatGroup *)group completion:(void(^)()) callback {
-    NSLog(@"INSERTING OR UPDATING GROUP WITH NAME: %@", group.name);
+    //NSLog(@"INSERTING OR UPDATING GROUP WITH NAME: %@", group.name);
     group.user = self.me;
     [self insertInMemory:group];
     __block ChatGroup *_group = group;
