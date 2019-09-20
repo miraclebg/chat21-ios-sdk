@@ -771,6 +771,36 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
     return NO;
 }
 
+-(BOOL)removeMessage:(NSString*)messageId {
+    const char *dbpath = [databasePath UTF8String];
+    if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
+        NSString *sql = [NSString stringWithFormat:@"DELETE FROM messages WHERE messageId = \"%@\"", messageId];
+        if (self.logQuery) {NSLog(@"**** QUERY:%@", sql);}
+        const char *stmt = [sql UTF8String];
+        sqlite3_prepare_v2(database, stmt,-1, &statement, NULL);
+        if (sqlite3_step(statement) == SQLITE_DONE) {
+            sqlite3_finalize(statement);
+            statement = nil;
+            
+            sqlite3_close(database);
+            database = nil;
+            return YES;
+        }
+        else {
+            NSLog(@"Error on removeConversation.");
+            NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
+            sqlite3_finalize(statement);
+            statement = nil;
+            
+            sqlite3_close(database);
+            database = nil;
+            return NO;
+        }
+    }
+    sqlite3_close(database);
+    database = nil;
+    return NO;
+}
 
 -(ChatConversation *)conversationFromStatement:(sqlite3_stmt *)statement {
     const char* _conversationId = (const char *) sqlite3_column_text(statement, 0);

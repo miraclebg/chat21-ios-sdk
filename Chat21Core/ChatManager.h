@@ -25,6 +25,8 @@
 @class ChatConnectionStatusHandler;
 @class ChatDiskImageCache;
 
+typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
+
 @interface ChatManager : NSObject
 
 // plist properties
@@ -87,9 +89,11 @@
 // === CONVERSATIONS ===
 
 //-(void)createOrUpdateConversation:(ChatConversation *)conversation;
--(void)removeConversation:(ChatConversation *)conversation;
+-(void)removeConversation:(ChatConversation *)conversation callback:(ChatManagerCompletedBlock)callback;
 -(void)removeConversationFromDB:(NSString *)conversationId;
 -(void)updateConversationIsNew:(FIRDatabaseReference *)conversationRef is_new:(int)is_new;
+
+- (void)removeConversationMessage:(FIRDatabaseReference *)messagesRef messageId:(NSString*)messageId callback:(ChatManagerCompletedBlock)callback;
 
 // === CONTACTS ===
 -(void)createContactFor:(ChatUser *)user withCompletionBlock:(void (^)(NSError *))completionBlock;

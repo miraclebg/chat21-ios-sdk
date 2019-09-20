@@ -499,15 +499,22 @@ static ChatManager *sharedInstance = nil;
 
 // === CONVERSATIONS ===
 
--(void)removeConversation:(ChatConversation *)conversation {
+-(void)removeConversation:(ChatConversation *)conversation callback:(ChatManagerCompletedBlock)callback {
     
     NSString *conversationId = conversation.conversationId;
     //NSLog(@"Removing conversation from local DB...");
-    [self removeConversationFromDB:conversationId];
     
-    //NSLog(@"Removing conversation with ref %@...", conversation.ref);
     FIRDatabaseReference *conversationRef = conversation.ref;
     [conversationRef removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
+        BOOL success = !error;
+        
+        if (success) {
+            [self removeConversationFromDB:conversationId];
+        }
+        
+        if (callback) {
+            callback(success, error);
+        }
         //NSLog(@"Conversation %@ removed from firebase with error: %@", firebaseRef, error);
     }];
 }
@@ -516,6 +523,28 @@ static ChatManager *sharedInstance = nil;
     ChatDB *db = [ChatDB getSharedInstance];
     [db removeConversation:conversationId];
     [db removeAllMessagesForConversation:conversationId];
+}
+
+- (void)removeMessageFromDb:(NSString*)messageId {
+    ChatDB *db = [ChatDB getSharedInstance];
+    [db removeMessage:messageId];
+}
+
+- (void)removeConversationMessage:(FIRDatabaseReference *)messagesRef messageId:(NSString*)messageId callback:(ChatManagerCompletedBlock)callback {
+    
+    FIRDatabaseReference *messageRef = [messagesRef child:messageId];
+    [messageRef removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
+        BOOL success = !error;
+        
+        if (success) {
+            [self removeMessageFromDb:messageId];
+        }
+        
+        if (callback) {
+            callback(success, error);
+        }
+        //NSLog(@"Conversation %@ removed from firebase with error: %@", firebaseRef, error);
+    }];
 }
 
 -(void)updateConversationIsNew:(FIRDatabaseReference *)conversationRef is_new:(int)is_new {

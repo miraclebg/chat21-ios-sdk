@@ -44,5 +44,6 @@
 - (NSArray*)getAllConversationsForUser:(NSString *)user archived:(BOOL)archived limit:(int)limit;
 -(ChatConversation *)getConversationById:(NSString *)conversationId;
 -(BOOL)removeConversation:(NSString *)conversationId;
+-(BOOL)removeMessage:(NSString*)messageId;
 
 @end
