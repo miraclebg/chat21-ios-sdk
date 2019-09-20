@@ -31,31 +31,31 @@
     double startDateInSeconds = [date timeIntervalSince1970];
     double secondsElapsed = nowInSeconds - startDateInSeconds;
     if (secondsElapsed < 60) {
-        timeMessagePart = [LI18n localizedString:@"FewSecondsAgoLKey"];
+        timeMessagePart = [LI18n localizedString:@"a few seconds ago"];
         unitMessagePart = @"";
     }
     else if (secondsElapsed >= 60 && secondsElapsed <120) {
-        timeMessagePart = [LI18n localizedString:@"AboutAMinuteAgoLKey"];
+        timeMessagePart = [LI18n localizedString:@"about a minute ago"];
         unitMessagePart = @"";
     }
     else if (secondsElapsed >= 120 && secondsElapsed <3600) {
         int minutes = secondsElapsed / 60.0;
         timeMessagePart = [[NSString alloc] initWithFormat:@"%d ", minutes];
-        unitMessagePart = [LI18n localizedString:@"MinutesAgoLKey"];
+        unitMessagePart = [LI18n localizedString:@"minutes ago"];
     }
     else if (secondsElapsed >=3600 && secondsElapsed < 5400) {
-        timeMessagePart = [LI18n localizedString:@"AboutAnHourAgoLKey"];
+        timeMessagePart = [LI18n localizedString:@"about an hour ago"];
         unitMessagePart = @"";
     }
     else if (secondsElapsed >= 5400 && secondsElapsed <= 86400) {
         int hours = secondsElapsed / 3600.0;
         timeMessagePart = [[NSString alloc] initWithFormat:@"%d ", hours];
-        unitMessagePart = [LI18n localizedString:@"HoursAgoLKey"];
+        unitMessagePart = [LI18n localizedString:@"hours ago"];
     }
     else {
         NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
         // http://mobiledevelopertips.com/cocoa/date-formatters-examples-take-2.html
-        [dateFormat setDateFormat:[LI18n localizedString:@"TimeToStringDateFormat"]];
+        [dateFormat setDateFormat:@"d/M/yyyy HH:mm:ss"];
         NSString *dateString = [[dateFormat stringFromDate:date] capitalizedString];
         //        timeMessagePart = [NSString stringWithFormat:@"%@ %@",NSLocalizedString(@"theLKey", nil), dateString];
         timeMessagePart = dateString;

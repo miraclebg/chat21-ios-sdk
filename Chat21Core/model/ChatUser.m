@@ -35,6 +35,7 @@
 - (id)init:(NSString *)userid fullname:(NSString *)fullname imageUrl:(NSString*)imageUrl {
     if (self = [super init])  {
         self.imageurl = imageUrl;
+        self.profileThumbImageURL = imageUrl;
         self.lastname = @"";
         self.firstname = fullname;
         self.fullname = fullname;

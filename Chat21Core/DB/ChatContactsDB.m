@@ -69,7 +69,7 @@ static ChatContactsDB *sharedInstance = nil;
         result = sqlite3_open_v2(dbpath, &database, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL);
         if (result == SQLITE_OK) {
             char *errMsg;
-            if (self.logQuery) {//NSLog(@"**** CREATING TABLE CONTACTS...");}
+            // if (self.logQuery) {//NSLog(@"**** CREATING TABLE CONTACTS...");}
             const char *sql_stmt_contacts =
             "create table if not exists contacts (contactId text primary key, firstname text, lastname text, fullname text, email text, imageurl text, createdon real)";
             if (sqlite3_exec(database, sql_stmt_contacts, NULL, NULL, &errMsg) != SQLITE_OK) {
@@ -122,7 +122,7 @@ static ChatContactsDB *sharedInstance = nil;
 
 -(void)insertOrUpdateContactSyncronized:(ChatUser *)contact completion:(void(^)(void)) callback {
     dispatch_async(serialDatabaseQueue, ^{
-//        //NSLog(@"INSERT OR UPDATE CONTACT: %@/%@ saved-date: %@", contact.userId, contact.fullname, contact.createdonAsDate);
+        //        //NSLog(@"INSERT OR UPDATE CONTACT: %@/%@ saved-date: %@", contact.userId, contact.fullname, contact.createdonAsDate);
         [self getContactByIdSyncronized:contact.userId completion:^(ChatUser *user) {
             if (user) {
                 [self updateContact:contact];
@@ -451,4 +451,6 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
 }
 
 @end
+
+
 
