@@ -89,6 +89,7 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 // === CONVERSATIONS ===
 
 //-(void)createOrUpdateConversation:(ChatConversation *)conversation;
+-(void)removeConversationForUser:(FIRDatabaseReference *)conversationRef userId:(NSInteger)otherUserId callback:(ChatManagerCompletedBlock)callback;
 -(void)removeConversation:(ChatConversation *)conversation callback:(ChatManagerCompletedBlock)callback;
 -(void)removeConversationFromDB:(NSString *)conversationId;
 -(void)updateConversationIsNew:(FIRDatabaseReference *)conversationRef is_new:(int)is_new;

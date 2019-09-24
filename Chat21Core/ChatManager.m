@@ -499,6 +499,24 @@ static ChatManager *sharedInstance = nil;
 
 // === CONVERSATIONS ===
 
+-(void)removeConversationForUser:(FIRDatabaseReference *)conversationRef userId:(NSInteger)otherUserId callback:(ChatManagerCompletedBlock)callback {
+    
+    NSString *conversationId = [NSString stringWithFormat:@"%ld", (long)otherUserId];
+    FIRDatabaseReference *ref = [conversationRef child:conversationId];
+    [ref removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
+        BOOL success = !error;
+        
+        if (success) {
+            [self removeConversationFromDB:conversationId];
+        }
+        
+        if (callback) {
+            callback(success, error);
+        }
+        //NSLog(@"Conversation %@ removed from firebase with error: %@", firebaseRef, error);
+    }];
+}
+
 -(void)removeConversation:(ChatConversation *)conversation callback:(ChatManagerCompletedBlock)callback {
     
     NSString *conversationId = conversation.conversationId;
