@@ -135,10 +135,10 @@
 
 
 -(void)printAllGroupsInMemory {
-    for (id k in self.groups) {
+    /*for (id k in self.groups) {
         ChatGroup *g = self.groups[k];
         //NSLog(@"group id: %@, name: %@, members: %@", g.groupId, g.name, [ChatGroup membersDictionary2String:g.members]);
-    }
+    }*/
 }
 
 -(ChatGroup *)groupById:(NSString *)groupId {

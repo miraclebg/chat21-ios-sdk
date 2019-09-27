@@ -325,9 +325,9 @@ static ChatManager *sharedInstance = nil;
     //NSLog(@"group.date %@", group.createdOn);
     //    //NSLog(@"group.iconID %@", group.iconID);
     //NSLog(@"members >");
-    for (NSString *user in group.members) {
+    /*for (NSString *user in group.members) {
         //NSLog(@"sanitized member: %@", user);
-    }
+    }*/
     
     NSDictionary *group_dict = [group asDictionary];
     
@@ -435,7 +435,7 @@ static ChatManager *sharedInstance = nil;
             NSDate *now = [[NSDate alloc] init];
             groupConversation.date = now;
             groupConversation.status = CONV_STATUS_FAILED;
-            BOOL result = [[ChatDB getSharedInstance] insertOrUpdateConversation:groupConversation];
+            [[ChatDB getSharedInstance] insertOrUpdateConversation:groupConversation];
             //NSLog(@">>>>> -Group Failed- Conversation insertOrUpdate operation is %d", result);
             [self.conversationsHandler restoreConversationsFromDB];
             callback(group, error);
@@ -446,7 +446,7 @@ static ChatManager *sharedInstance = nil;
             
             [self.groupsHandler insertOrUpdateGroup:group completion:^{
                 //NSLog(@"DB.Group id: %@", group.groupId);
-                ChatGroup *group_on_db = [[ChatManager getInstance] groupById:group.groupId];
+                //ChatGroup *group_on_db = [[ChatManager getInstance] groupById:group.groupId];
                 //NSLog(@"GROUP. name: %@, id: %@", group_on_db.name, group_on_db.groupId);
                 callback(group, nil);
             }];

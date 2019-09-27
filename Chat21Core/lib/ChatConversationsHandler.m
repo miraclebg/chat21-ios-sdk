@@ -42,10 +42,10 @@
 
 -(void)printAllConversations {
     //NSLog(@"***** CONVERSATIONS DUMP **************************");
-    NSMutableArray *conversations = [[[ChatDB getSharedInstance] getAllConversations] mutableCopy];
+    /*NSMutableArray *conversations = [[[ChatDB getSharedInstance] getAllConversations] mutableCopy];
     for (ChatConversation *c in conversations) {
         //NSLog(@"id: %@, user: %@ date: %@",c.conversationId, c.user, c.date);
-    }
+    }*/
     //NSLog(@"******************************* END.");
 }
 

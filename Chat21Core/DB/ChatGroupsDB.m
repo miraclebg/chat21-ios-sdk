@@ -257,22 +257,22 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
                     [groups addObject:group];
                 }
                 sqlite3_finalize(self->statement);
-                statement = nil;
+                self->statement = nil;
                 
                 sqlite3_close(self->database);
-                database = nil;
+                self->database = nil;
                 
             } else {
                 NSLog(@"**** PROBLEMS WHILE QUERYING GROUPS...");
                 NSLog(@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database));
                 sqlite3_finalize(self->statement);
-                statement = nil;
+                self->statement = nil;
                 
                 sqlite3_close(self->database);
             }
         }
         sqlite3_close(self->database);
-        database = nil;
+        self->database = nil;
         
         callback(groups);
     });

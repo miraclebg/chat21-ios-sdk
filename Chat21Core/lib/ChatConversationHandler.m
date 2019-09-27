@@ -623,10 +623,10 @@
     else {
         //NSLog(@"Image saved to gallery.");
     }
-    NSArray *directoryList = [filemgr contentsOfDirectoryAtPath:mediaPath error:nil];
+    /*NSArray *directoryList = [filemgr contentsOfDirectoryAtPath:mediaPath error:nil];
     for (id file in directoryList) {
         //NSLog(@"file: %@", file);
-    }
+    }*/
 }
 
 @end

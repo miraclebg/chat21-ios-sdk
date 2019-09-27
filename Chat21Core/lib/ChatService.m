@@ -74,7 +74,7 @@
                 callback(error);
             }
             else {
-                NSString *token = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
+                //NSString *token = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
                 //NSLog(@"token response: %@", token);
                 callback(nil);
             }
@@ -111,7 +111,7 @@
                 callback(error);
             }
             else {
-                NSString *token = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
+                //NSString *token = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
                 //NSLog(@"token response: %@", token);
                 callback(nil);
             }
@@ -148,7 +148,7 @@
                 callback(error);
             }
             else {
-                NSString *token = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
+                //NSString *token = [[NSString alloc] initWithData:data encoding:NSASCIIStringEncoding];
                 //NSLog(@"DELETE PROFILE OK: token response: %@", token);
                 callback(nil);
             }
