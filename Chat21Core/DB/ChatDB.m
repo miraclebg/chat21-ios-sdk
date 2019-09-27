@@ -771,6 +771,42 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
     return NO;
 }
 
+-(BOOL)updateLastMessageInConversation:(NSString*)conversationId {
+    const char *dbpath = [databasePath UTF8String];
+    if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
+        
+        NSString *updateSQL = [NSString stringWithFormat:@"UPDATE conversations SET last_message_text = \
+                               (SELECT messages.text_body FROM messages WHERE messages.conversationId = conversations.conversationId ORDER BY messages.timestamp desc LIMIT 1) \
+                               WHERE conversationId = ?"];
+        if (self.logQuery) {NSLog(@"QUERY:%@", updateSQL);}
+        
+        sqlite3_prepare(database, [updateSQL UTF8String], -1, &statement, NULL);
+        
+        sqlite3_bind_text(statement, 11, [conversationId UTF8String], -1, SQLITE_TRANSIENT);
+        
+        if (sqlite3_step(statement) == SQLITE_DONE) {
+            sqlite3_finalize(statement);
+            statement = nil;
+            
+            sqlite3_close(database);
+            database = nil;
+            return YES;
+        }
+        else {
+            NSLog(@"Error while updating conversation last message. Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
+            sqlite3_finalize(statement);
+            statement = nil;
+            
+            sqlite3_close(database);
+            database = nil;
+            return NO;
+        }
+    }
+    sqlite3_close(database);
+    database = nil;
+    return NO;
+}
+
 -(BOOL)removeMessage:(NSString*)messageId {
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {

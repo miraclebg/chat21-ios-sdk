@@ -40,6 +40,7 @@
 -(BOOL)insertOrUpdateConversation:(ChatConversation *)conversation;
 -(BOOL)insertConversation:(ChatConversation *)conversation;
 -(BOOL)updateConversation:(ChatConversation *)conversation;
+-(BOOL)updateLastMessageInConversation:(NSString*)conversationId;
 -(NSArray*)getAllConversations;
 - (NSArray*)getAllConversationsForUser:(NSString *)user archived:(BOOL)archived limit:(int)limit;
 -(ChatConversation *)getConversationById:(NSString *)conversationId;

@@ -62,6 +62,8 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 -(ChatConversationHandler *)getConversationHandlerForGroup:(ChatGroup *)group;
 //-(void)startConversationHandler:(ChatConversation *)conv;
 
+- (void)initPresenceHandler;
+
 -(ChatConversationsHandler *)createConversationsHandler;
 -(ChatPresenceHandler *)createPresenceHandler;
 -(ChatGroupsHandler *)createGroupsHandlerForUser:(ChatUser *)user;
@@ -94,7 +96,10 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 -(void)removeConversationFromDB:(NSString *)conversationId;
 -(void)updateConversationIsNew:(FIRDatabaseReference *)conversationRef is_new:(int)is_new;
 
-- (void)removeConversationMessage:(FIRDatabaseReference *)messagesRef messageId:(NSString*)messageId callback:(ChatManagerCompletedBlock)callback;
+- (void)removeConversationMessage:(NSString*)conversationId
+                      messagesRefSender:(FIRDatabaseReference *)messagesRefSender
+                      messagesRefReceiver:(FIRDatabaseReference *)messagesRefSender
+                        messageId:(NSString*)messageId callback:(ChatManagerCompletedBlock)callback;
 
 // === CONTACTS ===
 -(void)createContactFor:(ChatUser *)user withCompletionBlock:(void (^)(NSError *))completionBlock;

@@ -543,24 +543,47 @@ static ChatManager *sharedInstance = nil;
     [db removeAllMessagesForConversation:conversationId];
 }
 
+- (void)updateConversationLastMessageDb:(NSString*)conversationId {
+    ChatDB *db = [ChatDB getSharedInstance];
+    [db updateLastMessageInConversation:conversationId];
+}
+
 - (void)removeMessageFromDb:(NSString*)messageId {
     ChatDB *db = [ChatDB getSharedInstance];
     [db removeMessage:messageId];
 }
 
-- (void)removeConversationMessage:(FIRDatabaseReference *)messagesRef messageId:(NSString*)messageId callback:(ChatManagerCompletedBlock)callback {
+
+- (void)removeConversationMessage:(NSString*)conversationId
+                messagesRefSender:(FIRDatabaseReference *)messagesRefSender
+              messagesRefReceiver:(FIRDatabaseReference *)messagesRefReceiver
+                        messageId:(NSString*)messageId callback:(ChatManagerCompletedBlock)callback {
     
-    FIRDatabaseReference *messageRef = [messagesRef child:messageId];
-    [messageRef removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
+    FIRDatabaseReference *messageRefSender = [messagesRefSender child:messageId];
+    FIRDatabaseReference *messageRefReceiver = [messagesRefReceiver child:messageId];
+    
+    [messageRefSender removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
         BOOL success = !error;
         
         if (success) {
-            [self removeMessageFromDb:messageId];
+            [messageRefReceiver removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
+                BOOL success = !error;
+                
+                if (success) {
+                    [self removeMessageFromDb:messageId];
+                    [self updateConversationLastMessageDb:conversationId];
+                }
+                
+                if (callback) {
+                    callback(success, error);
+                }
+            }];
+        } else {
+            if (callback) {
+                callback(success, error);
+            }
         }
         
-        if (callback) {
-            callback(success, error);
-        }
         //NSLog(@"Conversation %@ removed from firebase with error: %@", firebaseRef, error);
     }];
 }

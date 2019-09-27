@@ -362,26 +362,26 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
             sqlite3_prepare_v2(self->database, stmt,-1, &self->statement, NULL);
             if (sqlite3_step(self->statement) == SQLITE_DONE) {
                 sqlite3_finalize(self->statement);
-                statement = nil;
+                self->statement = nil;
                 
                 sqlite3_close(self->database);
-                database = nil;
+                self->database = nil;
                 
                 callback(NO);
             }
             else {
                 NSLog(@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database));
                 sqlite3_finalize(self->statement);
-                statement = nil;
+                self->statement = nil;
                 
                 sqlite3_close(self->database);
-                database = nil;
+                self->database = nil;
                 
                 callback(YES);
             }
         }
         sqlite3_close(self->database);
-        database = nil;
+        self->database = nil;
         
         callback(YES);
     });
