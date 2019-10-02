@@ -97,8 +97,10 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 -(void)updateConversationIsNew:(FIRDatabaseReference *)conversationRef is_new:(int)is_new;
 
 - (void)removeConversationMessage:(NSString*)conversationId
-                      messagesRefSender:(FIRDatabaseReference *)messagesRefSender
-                      messagesRefReceiver:(FIRDatabaseReference *)messagesRefSender
+                         senderId:(NSString*)senderId
+                      recipientId:(NSString*)recipientId
+                messagesRefSender:(FIRDatabaseReference *)messagesRefSender
+              messagesRefReceiver:(FIRDatabaseReference *)messagesRefReceiver
                         messageId:(NSString*)messageId callback:(ChatManagerCompletedBlock)callback;
 
 // === CONTACTS ===

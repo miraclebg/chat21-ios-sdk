@@ -555,12 +555,17 @@ static ChatManager *sharedInstance = nil;
 
 
 - (void)removeConversationMessage:(NSString*)conversationId
+                         senderId:(NSString*)senderId
+                      recipientId:(NSString*)recipientId
                 messagesRefSender:(FIRDatabaseReference *)messagesRefSender
               messagesRefReceiver:(FIRDatabaseReference *)messagesRefReceiver
                         messageId:(NSString*)messageId callback:(ChatManagerCompletedBlock)callback {
     
-    FIRDatabaseReference *messageRefSender = [messagesRefSender child:messageId];
-    FIRDatabaseReference *messageRefReceiver = [messagesRefReceiver child:messageId];
+    //FIRDatabaseReference *conversationsRefSender = [[[messagesRefSender parent] child:@"conversatons"] child:recipientId];
+    //FIRDatabaseReference *conversationsRefReceiver = [[[messagesRefReceiver parent] child:@"conversatons"] child:senderId];
+    
+    FIRDatabaseReference *messageRefSender = [[messagesRefSender child:recipientId] child:messageId];
+    FIRDatabaseReference *messageRefReceiver = [[messagesRefReceiver child:senderId] child:messageId];
     
     [messageRefSender removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
         BOOL success = !error;
@@ -570,6 +575,7 @@ static ChatManager *sharedInstance = nil;
                 BOOL success = !error;
                 
                 if (success) {
+                    // update latest message
                     [self removeMessageFromDb:messageId];
                     [self updateConversationLastMessageDb:conversationId];
                 }
