@@ -36,6 +36,8 @@
 // observer
 @property (strong, nonatomic) NSMutableDictionary *eventObservers; // ( event_enum : DictionaryOfCallbacks (event_handle : event_callback) )
 @property (assign, atomic) volatile int64_t lastEventHandler;
+@property (assign, atomic) volatile int32_t lastEventHandler32;
+
 -(NSUInteger)observeEvent:(ChatConversationEventType)eventType withCallback:(void (^)(ChatConversation *conversation))callback;
 -(void)removeObserverWithHandle:(NSUInteger)event_handler;
 -(void)removeAllObservers;

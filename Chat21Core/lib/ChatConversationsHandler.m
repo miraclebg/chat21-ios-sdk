@@ -424,7 +424,15 @@
         eventCallbacks = [[NSMutableDictionary alloc] init];
         [self.eventObservers setObject:eventCallbacks forKey:@(eventType)];
     }
-    NSUInteger callback_handle = (NSUInteger) OSAtomicIncrement64Barrier(&_lastEventHandler);
+    
+    NSUInteger callback_handle = 0;
+    
+    if (sizeof(void*) == 4) {
+        callback_handle = (NSUInteger) OSAtomicIncrement32Barrier(&_lastEventHandler32);
+    } else if (sizeof(void*) == 8) {
+        callback_handle = (NSUInteger) OSAtomicIncrement64Barrier(&_lastEventHandler);
+    }
+    
     [eventCallbacks setObject:callback forKey:@(callback_handle)];
     return callback_handle;
 }

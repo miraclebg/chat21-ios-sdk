@@ -29,6 +29,7 @@
 
 -(void)basicInit {
     self.lastEventHandle = 1;
+    self.lastEventHandle32 = 1;
     self.imageDownloader = [[ChatImageDownloadManager alloc] init];
 }
 
@@ -81,6 +82,7 @@
     [self removeAllObservers];
     self.messages_ref_handle = 0;
     self.updated_messages_ref_handle = 0;
+    self.deleted_messages_ref_handle = 0;
 }
 
 -(void)restoreMessagesFromDB {
@@ -191,6 +193,24 @@
 //            [self updateMessageStatusOnDB:message.messageId withStatus:message.status];
             //[self notifyEvent:ChatEventMessageChanged message:message];
 //        }
+        
+    } withCancelBlock:^(NSError *error) {
+        //NSLog(@"%@", error.description);
+    }];
+    
+    self.deleted_messages_ref_handle = [self.messagesRef observeEventType:FIRDataEventTypeChildRemoved withBlock:^(FIRDataSnapshot *snapshot) {
+        //NSLog(@"UPDATED MESSAGE SNAPSHOT: %@", snapshot);
+        if (![self isValidMessageSnapshot:snapshot]) {
+            //NSLog(@"Discarding invalid snapshot: %@", snapshot);
+            return;
+        }
+        
+        ChatMessage *message = [ChatMessage messageFromfirebaseSnapshotFactory:snapshot];
+        
+        [self removeMessageFromMemory:message];
+        [[ChatDB getSharedInstance] removeMessage:message.messageId];
+        
+        [self notifyEvent:ChatEventMessageDeleted message:message];
         
     } withCancelBlock:^(NSError *error) {
         //NSLog(@"%@", error.description);
@@ -516,6 +536,26 @@
     }
 }
 
+-(void)removeMessageFromMemory:(ChatMessage *)message {
+    // find message...
+    NSInteger index = NSNotFound;
+    NSInteger i = 0;
+    
+    for (ChatMessage* msg in self.messages) {
+        if([msg.messageId isEqualToString: message.messageId]) {
+            index = i;
+            break;
+        }
+        i++;
+    }
+    
+    if (index == NSNotFound) {
+        return;
+    }
+    
+    [self.messages removeObjectAtIndex:index];
+}
+
 //-(void)finishedReceivingMessage:(ChatMessage *)message {
 //    //NSLog(@"ConversationHandler: Finished receiving message %@ on delegate: %@",message.text, self.delegateView);
 //    if (self.delegateView) {
@@ -550,7 +590,15 @@
         eventCallbacks = [[NSMutableDictionary alloc] init];
         [self.eventObservers setObject:eventCallbacks forKey:@(eventType)];
     }
-    NSUInteger callback_handle = (NSUInteger) OSAtomicIncrement64Barrier(&_lastEventHandle);
+    
+    NSUInteger callback_handle = 0;
+    
+    if (sizeof(void*) == 4) {
+        callback_handle = (NSUInteger) OSAtomicIncrement32Barrier(&_lastEventHandle32);
+    } else if (sizeof(void*) == 8) {
+        callback_handle = (NSUInteger) OSAtomicIncrement64Barrier(&_lastEventHandle);
+    }
+    
     [eventCallbacks setObject:callback forKey:@(callback_handle)];
     return callback_handle;
 }
