@@ -161,7 +161,7 @@ static float showTime = 4.0;
     // help: http://developer.boxcar.io/blog/2014-10-08-notification_sounds/
     //    NSURL *fileURL = [NSURL URLWithString:@"/System/Library/Audio/UISounds/Modern/sms_alert_bamboo.caf"];
     // Construct URL to sound file
-    NSString *path = [NSString stringWithFormat:@"%@/newnotif.caf", [[NSBundle mainBundle] resourcePath]];
+    NSString *path = [NSString stringWithFormat:@"%@/chat.caf", [[NSBundle mainBundle] resourcePath]];
     NSURL *fileURL = [NSURL fileURLWithPath:path];
     
     //    NSURL *fileURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource: ofType:];

@@ -548,6 +548,11 @@ static ChatManager *sharedInstance = nil;
     [db updateLastMessageInConversation:conversationId];
 }
 
+- (void)resetLastMessageInConversation:(NSString*)conversationId {
+    ChatDB *db = [ChatDB getSharedInstance];
+    [db resetLastMessageInConversation:conversationId];
+}
+
 - (void)removeMessageFromDb:(NSString*)messageId {
     ChatDB *db = [ChatDB getSharedInstance];
     [db removeMessage:messageId];
@@ -561,36 +566,60 @@ static ChatManager *sharedInstance = nil;
               messagesRefReceiver:(FIRDatabaseReference *)messagesRefReceiver
                         messageId:(NSString*)messageId callback:(ChatManagerCompletedBlock)callback {
     
-    //FIRDatabaseReference *conversationsRefSender = [[[messagesRefSender parent] child:@"conversatons"] child:recipientId];
-    //FIRDatabaseReference *conversationsRefReceiver = [[[messagesRefReceiver parent] child:@"conversatons"] child:senderId];
+    FIRDatabaseReference *conversationsRefSender = [[[messagesRefSender parent] child:@"conversations"] child:recipientId];
+    FIRDatabaseReference *conversationsRefReceiver = [[[messagesRefReceiver parent] child:@"conversations"] child:senderId];
     
     FIRDatabaseReference *messageRefSender = [[messagesRefSender child:recipientId] child:messageId];
     FIRDatabaseReference *messageRefReceiver = [[messagesRefReceiver child:senderId] child:messageId];
     
-    [messageRefSender removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
-        BOOL success = !error;
+    FIRDatabaseReference *messagessRefSender = [messagesRefSender child:recipientId];
+    FIRDatabaseReference *messagessRefReceiver = [messagesRefReceiver child:senderId];
+    
+    [[messagessRefSender queryLimitedToLast:1] observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
         
-        if (success) {
-            [messageRefReceiver removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
+        // find out if the deleted message is the last message - if so we need to update the last message text under conversations
+        BOOL isLastChildSender = [snapshot hasChild:messageId];
+        
+        [[messagessRefReceiver queryLimitedToLast:1] observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+            
+            // find out if the deleted message is the last message - if so we need to update the last message text under conversations
+            BOOL isLastChildReceiver = [snapshot hasChild:messageId];
+            
+            // to the deletion
+            [messageRefSender removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
                 BOOL success = !error;
                 
                 if (success) {
-                    // update latest message
-                    [self removeMessageFromDb:messageId];
-                    [self updateConversationLastMessageDb:conversationId];
+                    [messageRefReceiver removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
+                        BOOL success = !error;
+                        
+                        if (success) {
+                            [self removeMessageFromDb:messageId];
+                            
+                            if (isLastChildSender) {
+                                [[conversationsRefSender child:@"last_message_text"] setValue:@" "];
+                            }
+                            
+                            if (isLastChildReceiver) {
+                                [[conversationsRefReceiver child:@"last_message_text"] setValue:@" "];
+                            }
+                            
+                            [self resetLastMessageInConversation:conversationId];
+                        }
+                        
+                        if (callback) {
+                            callback(success, error);
+                        }
+                    }];
+                } else {
+                    if (callback) {
+                        callback(success, error);
+                    }
                 }
                 
-                if (callback) {
-                    callback(success, error);
-                }
+                //NSLog(@"Conversation %@ removed from firebase with error: %@", firebaseRef, error);
             }];
-        } else {
-            if (callback) {
-                callback(success, error);
-            }
-        }
-        
-        //NSLog(@"Conversation %@ removed from firebase with error: %@", firebaseRef, error);
+        }];
     }];
 }
 
