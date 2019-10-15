@@ -558,8 +558,8 @@ static ChatManager *sharedInstance = nil;
     [db removeMessage:messageId];
 }
 
-
-- (void)removeConversationMessage:(NSString*)conversationId
+- (void)removeConversationMessage:(BOOL)removeBothMessages
+                   conversationId:(NSString*)conversationId
                          senderId:(NSString*)senderId
                       recipientId:(NSString*)recipientId
                 messagesRefSender:(FIRDatabaseReference *)messagesRefSender
@@ -590,27 +590,41 @@ static ChatManager *sharedInstance = nil;
                 BOOL success = !error;
                 
                 if (success) {
-                    [messageRefReceiver removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
-                        BOOL success = !error;
+                    if (removeBothMessages) {
+                        [messageRefReceiver removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
+                            BOOL success = !error;
+                            
+                            if (success) {
+                                [self removeMessageFromDb:messageId];
+                                
+                                if (isLastChildSender) {
+                                    [[conversationsRefSender child:@"last_message_text"] setValue:@" "];
+                                }
+                                
+                                if (isLastChildReceiver) {
+                                    [[conversationsRefReceiver child:@"last_message_text"] setValue:@" "];
+                                }
+                                
+                                [self resetLastMessageInConversation:conversationId];
+                            }
+                            
+                            if (callback) {
+                                callback(success, error);
+                            }
+                        }];
+                    } else {
+                        [self removeMessageFromDb:messageId];
                         
-                        if (success) {
-                            [self removeMessageFromDb:messageId];
-                            
-                            if (isLastChildSender) {
-                                [[conversationsRefSender child:@"last_message_text"] setValue:@" "];
-                            }
-                            
-                            if (isLastChildReceiver) {
-                                [[conversationsRefReceiver child:@"last_message_text"] setValue:@" "];
-                            }
-                            
-                            [self resetLastMessageInConversation:conversationId];
+                        if (isLastChildSender) {
+                            [[conversationsRefSender child:@"last_message_text"] setValue:@" "];
                         }
+                        
+                        [self resetLastMessageInConversation:conversationId];
                         
                         if (callback) {
                             callback(success, error);
                         }
-                    }];
+                    }
                 } else {
                     if (callback) {
                         callback(success, error);
