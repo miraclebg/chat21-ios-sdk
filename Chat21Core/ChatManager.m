@@ -586,12 +586,12 @@ static ChatManager *sharedInstance = nil;
             BOOL isLastChildReceiver = [snapshot hasChild:messageId];
             
             // to the deletion
-            [messageRefSender removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
+            [messageRefReceiver removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
                 BOOL success = !error;
                 
                 if (success) {
                     if (removeBothMessages) {
-                        [messageRefReceiver removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
+                        [messageRefSender removeValueWithCompletionBlock:^(NSError *error, FIRDatabaseReference *firebaseRef) {
                             BOOL success = !error;
                             
                             if (success) {
