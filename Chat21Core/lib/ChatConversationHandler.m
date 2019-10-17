@@ -122,6 +122,7 @@
     }
     
     self.messages_ref_handle = [[[self.messagesRef queryOrderedByChild:@"timestamp"] queryStartingAtValue:@(lasttime)] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot *snapshot) {
+        
         // IMPORTANT: this query ignores messages without a timestamp.
         // IMPORTANT: This callback is called also for newly locally created messages still not sent.
         //NSLog(@"NEW MESSAGE SNAPSHOT: %@", snapshot);
@@ -129,6 +130,7 @@
             //NSLog(@"Discarding invalid snapshot: %@", snapshot);
             return;
         }
+        
         ChatMessage *message = [ChatMessage messageFromfirebaseSnapshotFactory:snapshot];
         message.conversationId = self.conversationId; // DB query is based on this attribute!!! (conversationID = Recipient)
         
@@ -138,7 +140,9 @@
         // updates status only of messages not sent by me
         // HO RICEVUTO UN MESSAGGIO NUOVO
 //        //NSLog(@"self.senderId: %@", self.senderId);
-        if (message.status < MSG_STATUS_RECEIVED && ![message.sender isEqualToString:self.senderId]) { // CONTROLLING... "message.status < MSG_STATUS_RECEIVED" IN MODO DA EVITARE IL COSTO DI RI-AGGIORNARE CONTINUAMENTE LO STATO DI MESSAGGI CHE HANNO GIA LO STATO RECEIVED (MAGARI E' LA SINCRONIZZAZIONE DI UN NUOVO DISPOSITIVO CHE NON DEVE PIU' COMUNICARE NULLA AL MITTENTE MA SOLO SCARICARE I MESSAGGI NELLO STATO IN CUI SI TROVANO).
+        if (message.status < MSG_STATUS_RECEIVED && ![message.sender isEqualToString:self.senderId]) { // CONTROLLING... "message.status < MSG_STATUS_RECEIVED"
+      
+            //IN MODO DA EVITARE IL COSTO DI RI-AGGIORNARE CONTINUAMENTE LO STATO DI MESSAGGI CHE HANNO GIA LO STATO RECEIVED (MAGARI E' LA SINCRONIZZAZIONE DI UN NUOVO DISPOSITIVO CHE NON DEVE PIU' COMUNICARE NULLA AL MITTENTE MA SOLO SCARICARE I MESSAGGI NELLO STATO IN CUI SI TROVANO).
             // NOT RECEIVED = NEW!
             if (message.isDirect) {
                 [message updateStatusOnFirebase:MSG_STATUS_RECEIVED]; // firebase
@@ -146,6 +150,7 @@
                 // TODO: implement received status for group's messages
             }
         }
+        
         // updates or insert new messages
         // Note: we always get the last message sent. So this check is necessary to avoid this message notified as "new" (...playing sound etc.)
         [self insertMessageIfNotExists:message];
