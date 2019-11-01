@@ -18,7 +18,7 @@
     NSString *host = [ChatManager getInstance].baseURL;
     NSString *archiveConversationURI = [ChatManager getInstance].archiveConversationURI;
     NSString *archiveConversationURIpopulated = [NSString stringWithFormat:archiveConversationURI, tenant, conversationId];
-//    NSString *url = [[NSString alloc] initWithFormat:@"%@/api/%@/conversations/%@", host, tenant, conversationId];
+    //    NSString *url = [[NSString alloc] initWithFormat:@"%@/api/%@/conversations/%@", host, tenant, conversationId];
     NSString *url = [[NSString alloc] initWithFormat:@"%@%@", host, archiveConversationURIpopulated];
     //NSLog(@"archiveConversationService URL: %@", url);
     return url;

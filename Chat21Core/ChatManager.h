@@ -96,7 +96,8 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 -(void)removeConversationFromDB:(NSString *)conversationId;
 -(void)updateConversationIsNew:(FIRDatabaseReference *)conversationRef is_new:(int)is_new;
 
-- (void)removeConversationMessage:(NSString*)conversationId
+- (void)removeConversationMessage:(BOOL)removeBothMessages
+                   conversationId:(NSString*)conversationId
                          senderId:(NSString*)senderId
                       recipientId:(NSString*)recipientId
                 messagesRefSender:(FIRDatabaseReference *)messagesRefSender
