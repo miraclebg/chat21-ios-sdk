@@ -38,8 +38,27 @@ static ChatGroupsDB *sharedInstance = nil;
     return self;
 }
 
+- (void)dealloc {
+    [self closeHandle];
+}
+
+- (void)closeHandle {
+    if (database) {
+        sqlite3_close_v2(database);
+        database = nil;
+    }
+    databasePath = nil;
+}
+
 // name only [a-zA-Z0-9_]
 -(BOOL)createDBWithName:(NSString *)name {
+    
+    if (!name || !name.length) {
+        return NO;
+    }
+    
+    [self closeHandle];
+    
     NSString *docsDir;
     NSArray *dirPaths;
     // Get the documents directory
@@ -60,7 +79,7 @@ static ChatGroupsDB *sharedInstance = nil;
     
     // **** TESTING ONLY ****
     // if you add another table or change an existing one you must (for the moment) drop the DB
-//    [self drop_database];
+    //    [self drop_database];
     
     if ([filemgr fileExistsAtPath: databasePath ] == NO) {
         NSLog(@"Database %@ not exists. Creating...", databasePath);
@@ -109,6 +128,7 @@ static ChatGroupsDB *sharedInstance = nil;
             NSLog(@"%@", error);
         }
     }
+    [self closeHandle];
 }
 
 //-(void)insertGroupOnlyIfNotExistsSyncronized:(ChatGroup *)group completion:(void(^)()) callback {
@@ -138,6 +158,14 @@ static ChatGroupsDB *sharedInstance = nil;
 //}
 
 -(void)insertOrUpdateGroupSyncronized:(ChatGroup *)group completion:(void(^)()) callback {
+    
+    if (!database) {
+        if (callback) {
+            callback();
+        }
+        return;
+    }
+    
     dispatch_async(serialDatabaseQueue, ^{
         ChatGroup *exists = [self getGroupById:group.groupId];
         if (exists) {
@@ -154,6 +182,11 @@ static ChatGroupsDB *sharedInstance = nil;
 }
 
 -(BOOL)insertGroup:(ChatGroup *)group {
+    
+    if (!database) {
+        return NO;
+    }
+    
     NSLog(@"**** insert query...");
     const char *dbpath = [databasePath UTF8String];
     double createdOn = (double)[group.createdOn timeIntervalSince1970]; // NSTimeInterval is a (double)
@@ -200,6 +233,11 @@ static ChatGroupsDB *sharedInstance = nil;
 }
 
 -(BOOL)updateGroup:(ChatGroup *)group {
+    
+    if (!database) {
+        return NO;
+    }
+    
     //    NSLog(@"**** updating group %@", group.groupId);
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
@@ -245,6 +283,14 @@ static ChatGroupsDB *sharedInstance = nil;
 static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupName, owner, members, createdOn FROM groups ";
 
 -(void)getAllGroupsSyncronizedWithCompletion:(void(^)(NSArray<ChatGroup*> *)) callback {
+    
+    if (!database) {
+        if (callback) {
+            callback(nil);
+        }
+        return;
+    }
+    
     dispatch_async(serialDatabaseQueue, ^{
         NSMutableArray *groups = [[NSMutableArray alloc] init];
         const char *dbpath = [self->databasePath UTF8String];
@@ -280,6 +326,11 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
 
 //-(NSArray*)getAllGroupsForUser:(NSString *)user {
 -(NSMutableArray *)getAllGroupsForUser:(NSString *)user {
+    
+    if (!database) {
+        return nil;
+    }
+    
     NSMutableArray *groups = [[NSMutableArray alloc] init];
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
@@ -316,6 +367,14 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
 }
 
 -(void)getGroupByIdSyncronized:(NSString *)groupId completion:(void(^)(ChatGroup *)) callback {
+    
+    if (!database) {
+        if (callback) {
+            callback(nil);
+        }
+        return;
+    }
+    
     dispatch_async(serialDatabaseQueue, ^{
         ChatGroup *group = [self getGroupById:groupId];
         callback(group);
@@ -323,10 +382,15 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
 }
 
 -(ChatGroup *)getGroupById:(NSString *)groupId {
+    
+    if (!database) {
+        return nil;
+    }
+    
     ChatGroup *group = nil;
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK)
-    {
+        {
         NSString *querySQL = [NSString stringWithFormat:
                               @"%@ where groupId = \"%@\"",SELECT_FROM_GROUPS_STATEMENT, groupId];
         if (self.logQuery) {
@@ -342,9 +406,9 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
             NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
         }
         sqlite3_finalize(statement);
-    statement = nil;
-    
-    }
+        statement = nil;
+        
+        }
     sqlite3_close(database);
     database = nil;
     
@@ -352,6 +416,14 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
 }
 
 -(void)removeGroupSyncronized:(NSString *)groupId completion:(void(^)(BOOL error)) callback {
+    
+    if (!database) {
+        if (callback) {
+            callback(YES);
+        }
+        return;
+    }
+    
     dispatch_async(serialDatabaseQueue, ^{
         //    NSLog(@"**** remove query...");
         const char *dbpath = [self->databasePath UTF8String];
@@ -447,3 +519,4 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
 }
 
 @end
+

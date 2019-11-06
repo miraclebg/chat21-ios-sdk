@@ -41,8 +41,27 @@ static ChatDB *sharedInstance = nil;
     return self;
 }
 
+- (void)dealloc {
+    [self closeHandle];
+}
+
+- (void)closeHandle {
+    if (database) {
+        sqlite3_close_v2(database);
+        database = nil;
+    }
+    databasePath = nil;
+}
+
 // name only [a-zA-Z0-9_]
 -(BOOL)createDBWithName:(NSString *)name {
+    
+    if (!name || !name.length) {
+        return NO;
+    }
+    
+    [self closeHandle];
+    
     NSString *docsDir;
     //    NSArray *dirPaths;
     // Get the documents directory
@@ -121,6 +140,9 @@ static ChatDB *sharedInstance = nil;
 }
 
 -(void)upgradeSchema:(const char *)dbpath {
+    
+    [self closeHandle];
+    
     // version schema
     // or test if the column exists
     // https://stackoverflow.com/questions/3604310/alter-table-add-column-if-not-exists-in-sqlite
@@ -160,6 +182,7 @@ static ChatDB *sharedInstance = nil;
             if (self.logQuery) {NSLog(@"%@", error);}
         }
     }
+    [self closeHandle];
 }
 
 -(BOOL)insertMessageIfNotExists:(ChatMessage *)message {
@@ -180,6 +203,11 @@ static ChatDB *sharedInstance = nil;
 }
 
 -(BOOL)insertMessage:(ChatMessage *)message {
+    
+    if (!database) {
+        return NO;
+    }
+    
     const char *dbpath = [databasePath UTF8String];
     double timestamp = (double)[message.date timeIntervalSince1970]; // NSTimeInterval is a (double)
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
@@ -226,6 +254,11 @@ static ChatDB *sharedInstance = nil;
 }
 
 -(BOOL)updateMessage:(NSString *)messageId withStatus:(int)status {
+    
+    if (!database) {
+        return NO;
+    }
+    
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
         NSString *updateSQL = [NSString stringWithFormat:@"UPDATE messages SET status = %d WHERE messageId = \"%@\"", status, messageId];
@@ -253,6 +286,11 @@ static ChatDB *sharedInstance = nil;
 }
 
 -(BOOL)updateMessage:(NSString *)messageId status:(int)status text:(NSString *)text snapshotAsJSONString:(NSString *)snapshotAsJSONString {
+    
+    if (!database) {
+        return NO;
+    }
+    
     const char *dbpath = [databasePath UTF8String];
     if (self.logQuery) {NSLog(@"snapshot: %@", snapshotAsJSONString);}
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
@@ -287,6 +325,11 @@ static ChatDB *sharedInstance = nil;
 static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversationId, sender, recipient, text_body, status, timestamp, type, channel_type, snapshot from messages ";
 
 -(NSArray*)getAllMessages {
+    
+    if (!database) {
+        return nil;
+    }
+    
     NSMutableArray *messages = [[NSMutableArray alloc] init];
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
@@ -317,6 +360,11 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 }
 
 -(NSArray*)getAllMessagesForConversation:(NSString *)conversationId start:(int)start count:(int)count {
+    
+    if (!database) {
+        return nil;
+    }
+    
     NSMutableArray *messages = [[NSMutableArray alloc] init];
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
@@ -352,6 +400,11 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 }
 
 -(ChatMessage *)getMessageById:(NSString *)messageId {
+    
+    if (!database) {
+        return nil;
+    }
+    
     ChatMessage *message = nil;
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK)
@@ -548,6 +601,11 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 }
 
 -(BOOL)insertConversation:(ChatConversation *)conversation {
+    
+    if (!database) {
+        return NO;
+    }
+    
     const char *dbpath = [databasePath UTF8String];
     double timestamp = (double)[conversation.date timeIntervalSince1970]; // NSTimeInterval is a (double)
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
@@ -601,6 +659,11 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 
 // NOTE: fields "conversationId", "user" and "convers_with" are "invariant" and not updated.
 -(BOOL)updateConversation:(ChatConversation *)conversation {
+    
+    if (!database) {
+        return NO;
+    }
+    
     //    ChatConversation *previous_conv = [self getConversationById:conversation.conversationId]; // TEST ONLY QUERY
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
@@ -649,6 +712,11 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, sender_fullname, recipient, recipient_fullname, last_message_text, convers_with, convers_with_fullname, channel_type, is_new, timestamp, status, archived FROM conversations ";
 
 - (NSArray*)getAllConversations {
+    
+    if (!database) {
+        return nil;
+    }
+    
     NSMutableArray *convs = [[NSMutableArray alloc] init];
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
@@ -680,6 +748,11 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
 }
 
 - (NSArray*)getAllConversationsForUser:(NSString *)user archived:(BOOL)archived limit:(int)limit {
+    
+    if (!database) {
+        return nil;
+    }
+    
     NSMutableArray *convs = [[NSMutableArray alloc] init];
     NSString *limit_query = limit == 0 ? @"" : [[NSString alloc] initWithFormat:@" limit %d", limit];
     int _archived = (int)archived;
@@ -714,6 +787,11 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
 }
 
 - (ChatConversation *)getConversationById:(NSString *)conversationId {
+    
+    if (!database) {
+        return nil;
+    }
+    
     ChatConversation *conv = nil;
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK)
@@ -740,6 +818,11 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
 }
 
 -(BOOL)removeConversation:(NSString *)conversationId {
+    
+    if (!database) {
+        return NO;
+    }
+    
     //    NSLog(@"**** remove query...");
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
@@ -772,6 +855,11 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
 }
 
 -(BOOL)resetLastMessageInConversation:(NSString*)conversationId {
+    
+    if (!database) {
+        return NO;
+    }
+    
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
         
@@ -806,6 +894,11 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
 }
 
 -(BOOL)updateLastMessageInConversation:(NSString*)conversationId {
+    
+    if (!database) {
+        return NO;
+    }
+    
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
         
@@ -842,6 +935,11 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
 }
 
 -(BOOL)removeMessage:(NSString*)messageId {
+    
+    if (!database) {
+        return NO;
+    }
+    
     const char *dbpath = [databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
         NSString *sql = [NSString stringWithFormat:@"DELETE FROM messages WHERE messageId = \"%@\"", messageId];
@@ -965,4 +1063,5 @@ static NSString *SELECT_FROM_STATEMENT = @"SELECT conversationId, user, sender, 
 // CONVERSATIONS END
 
 @end
+
 

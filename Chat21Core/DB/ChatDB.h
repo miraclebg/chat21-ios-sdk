@@ -24,6 +24,7 @@
 +(ChatDB*)getSharedInstance;
 //-(BOOL)createDB;
 -(BOOL)createDBWithName:(NSString *)name;
+- (void)closeHandle;
 
 // messages
 -(BOOL)insertMessageIfNotExists:(ChatMessage *)message;

@@ -89,7 +89,7 @@ static ChatManager *sharedInstance = nil;
 }
 
 -(void)addConversationHandler:(ChatConversationHandler *)handler {
-//    //NSLog(@"Adding handler with key: %@", handler.conversationId);
+    //    //NSLog(@"Adding handler with key: %@", handler.conversationId);
     [self.handlers setObject:handler forKey:handler.conversationId];
 }
 
@@ -104,11 +104,11 @@ static ChatManager *sharedInstance = nil;
         [self.conversationsHandler restoreConversationsFromDB];
         [self.conversationsHandler connect];
         // activate connections for every conversation with "new" messages
-//        for (ChatConversation *conv in self.conversationsHandler.conversations) {
-//            if (conv.is_new) {
-//                [self startConversationHandler:conv];
-//            }
-//        }
+        //        for (ChatConversation *conv in self.conversationsHandler.conversations) {
+        //            if (conv.is_new) {
+        //                [self startConversationHandler:conv];
+        //            }
+        //        }
     }
     return self.conversationsHandler;
 }
@@ -151,7 +151,7 @@ static ChatManager *sharedInstance = nil;
         [self addConversationHandler:handler];
         [handler restoreMessagesFromDB];
         //NSLog(@"Restored messages (group: %@) count: %lu", group.groupId, (unsigned long)handler.messages.count);
-//        [handler connect];
+        //        [handler connect];
     }
     return handler;
 }
@@ -203,16 +203,18 @@ static ChatManager *sharedInstance = nil;
 }
 
 -(void)startWithUser:(ChatUser *)user {
-    [self dispose];
-    self.loggedUser = user;
-    ChatDB *chatDB = [ChatDB getSharedInstance];
-    [chatDB createDBWithName:user.userId];
-    ChatContactsDB *contactsDB = [ChatContactsDB getSharedInstance];
-    [contactsDB createDBWithName:user.userId];
-    ChatGroupsDB *groupsDB = [ChatGroupsDB getSharedInstance];
-    [groupsDB createDBWithName:user.userId];
-    [self initConnectionStatusHandler];
-    [self startAuthStatusListner];
+    if (user && user.userId && user.userId.length) {
+        [self dispose];
+        self.loggedUser = user;
+        ChatDB *chatDB = [ChatDB getSharedInstance];
+        [chatDB createDBWithName:user.userId];
+        ChatContactsDB *contactsDB = [ChatContactsDB getSharedInstance];
+        [contactsDB createDBWithName:user.userId];
+        ChatGroupsDB *groupsDB = [ChatGroupsDB getSharedInstance];
+        [groupsDB createDBWithName:user.userId];
+        [self initConnectionStatusHandler];
+        [self startAuthStatusListner];
+    }
 }
 
 -(void)initGroupsHandler {
@@ -238,25 +240,25 @@ static ChatManager *sharedInstance = nil;
         self.authStateDidChangeListenerHandle =
         [[FIRAuth auth]
          addAuthStateDidChangeListener:^(FIRAuth *_Nonnull auth, FIRUser *_Nullable user) {
-             //NSLog(@"Firebase stato autenticazione cambiato! Auth: %@ user: %@", auth.currentUser, user);
-             if (user) {
-                 //NSLog(@"Signed in.");
-                 [self initPresenceHandler];
-                 [self initContactsSynchronizer];
-                 if (self.groupsMode) {
-                     [self initGroupsHandler];
-                 }
-             }
-             else {
-                 // practically never called because of dispose() method removes this handle (and dispose is called just
-                 // during the logout action.
-                 //NSLog(@"Signed out.");
-                 if (self.authStateDidChangeListenerHandle) {
-                     [[FIRAuth auth] removeAuthStateDidChangeListener:self.authStateDidChangeListenerHandle];
-                     self.authStateDidChangeListenerHandle = nil;
-                 }
-             }
-         }];
+            //NSLog(@"Firebase stato autenticazione cambiato! Auth: %@ user: %@", auth.currentUser, user);
+            if (user) {
+                //NSLog(@"Signed in.");
+                [self initPresenceHandler];
+                [self initContactsSynchronizer];
+                if (self.groupsMode) {
+                    [self initGroupsHandler];
+                }
+            }
+            else {
+                // practically never called because of dispose() method removes this handle (and dispose is called just
+                // during the logout action.
+                //NSLog(@"Signed out.");
+                if (self.authStateDidChangeListenerHandle) {
+                    [[FIRAuth auth] removeAuthStateDidChangeListener:self.authStateDidChangeListenerHandle];
+                    self.authStateDidChangeListenerHandle = nil;
+                }
+            }
+        }];
     }
 }
 
@@ -279,11 +281,11 @@ static ChatManager *sharedInstance = nil;
         [[FIRAuth auth] removeAuthStateDidChangeListener:self.authStateDidChangeListenerHandle];
         self.authStateDidChangeListenerHandle = nil;
     }
-//    NSString *url = @"/.info/connected";
-//    FIRDatabaseReference *connectedRef = [[[FIRDatabase database] reference] child:url];
-//    if (self.connectedRefHandle) {
-//        [connectedRef removeObserverWithHandle:self.connectedRefHandle];
-//    }
+    //    NSString *url = @"/.info/connected";
+    //    FIRDatabaseReference *connectedRef = [[[FIRDatabase database] reference] child:url];
+    //    if (self.connectedRefHandle) {
+    //        [connectedRef removeObserverWithHandle:self.connectedRefHandle];
+    //    }
     if (self.presenceHandler) {
         [self.presenceHandler goOffline];
         self.presenceHandler = nil;
@@ -326,8 +328,8 @@ static ChatManager *sharedInstance = nil;
     //    //NSLog(@"group.iconID %@", group.iconID);
     //NSLog(@"members >");
     /*for (NSString *user in group.members) {
-        //NSLog(@"sanitized member: %@", user);
-    }*/
+     //NSLog(@"sanitized member: %@", user);
+     }*/
     
     NSDictionary *group_dict = [group asDictionary];
     
@@ -406,13 +408,13 @@ static ChatManager *sharedInstance = nil;
     //    SHPUser *me = self.context.loggedUser;
     NSString *me = self.loggedUser.userId;
     //    NSString *sanitized_username_for_firebase = [userId stringByReplacingOccurrencesOfString:@"." withString:@"_"];
-//    ChatGroup *group = [[ChatGroup alloc] init];
-//    group.groupId = [self newGroupId];
-//    group.name = name;
-//    group.user = me; //me.username; // for DB partioning
-//    group.members = [ChatGroup membersArray2Dictionary:membersIDs];
-//    group.owner = me; //sanitized_username_for_firebase;
-//    group.createdOn = [[NSDate alloc] init];
+    //    ChatGroup *group = [[ChatGroup alloc] init];
+    //    group.groupId = [self newGroupId];
+    //    group.name = name;
+    //    group.user = me; //me.username; // for DB partioning
+    //    group.members = [ChatGroup membersArray2Dictionary:membersIDs];
+    //    group.owner = me; //sanitized_username_for_firebase;
+    //    group.createdOn = [[NSDate alloc] init];
     
     //    ChatManager *chat = [ChatManager getSharedInstance];
     [self createFirebaseGroup:group withCompletionBlock:^(NSString *_groupId, NSError *error) {
@@ -421,7 +423,7 @@ static ChatManager *sharedInstance = nil;
             // a local DB conversation entry is created to manage, locally, the group creation workflow.
             // ex. success/failure on creation - add/removing members - change group title etc.
             NSString *group_conv_id = _groupId; //[ChatUtil conversationIdForGroup:_groupId];
-//            //NSLog(@"group_conv_id created for me (%@): %@",me, group_conv_id);
+            //            //NSLog(@"group_conv_id created for me (%@): %@",me, group_conv_id);
             NSString *conversation_message_for_admin = [[NSString alloc] initWithFormat:@"Errore nella crazione del gruppo \"%@\". Tocca per riprovare.", group.name];
             ChatConversation *groupConversation = [[ChatConversation alloc] init];
             groupConversation.conversationId = group_conv_id;
@@ -638,10 +640,10 @@ static ChatManager *sharedInstance = nil;
 }
 
 -(void)updateConversationIsNew:(FIRDatabaseReference *)conversationRef is_new:(int)is_new {
-//    //NSLog(@"Updating conversation ref %@ is_new? %d", conversationRef, is_new);
+    //    //NSLog(@"Updating conversation ref %@ is_new? %d", conversationRef, is_new);
     NSDictionary *conversation_dict = @{
-                                        CONV_IS_NEW_KEY: [NSNumber numberWithBool:is_new]
-                                        };
+        CONV_IS_NEW_KEY: [NSNumber numberWithBool:is_new]
+    };
     [conversationRef updateChildValues:conversation_dict];
 }
 
@@ -667,14 +669,14 @@ static ChatManager *sharedInstance = nil;
             //NSLog(@"instanceId (FCMToken) removed");
         }
     }];
-//    [[[[[FIRDatabase database] reference] child:user_path] child:@"instanceId"] removeValueWithCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
-//        if (error) {
-//            //NSLog(@"Error removing instanceId (FCMToken) on user_path %@: %@", error, user_path);
-//        }
-//        else {
-//            //NSLog(@"instanceId (FCMToken) removed");
-//        }
-//    }];
+    //    [[[[[FIRDatabase database] reference] child:user_path] child:@"instanceId"] removeValueWithCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+    //        if (error) {
+    //            //NSLog(@"Error removing instanceId (FCMToken) on user_path %@: %@", error, user_path);
+    //        }
+    //        else {
+    //            //NSLog(@"instanceId (FCMToken) removed");
+    //        }
+    //    }];
 }
 
 -(void)loadGroup:(NSString *)group_id completion:(void (^)(ChatGroup* group, BOOL error))callback {
@@ -723,10 +725,10 @@ static ChatManager *sharedInstance = nil;
         if (user) {
             //NSLog(@"FIREBASE CONTACT, id: %@ firstname: %@ fullname: %@",user.userId, user.firstname, user.fullname);
             callback(user);
-//          [self insertOrUpdateContactOnDB:contact];
+            //          [self insertOrUpdateContactOnDB:contact];
         }
     } withCancelBlock:^(NSError *error) {
-         //NSLog(@"%@", error.description);
+        //NSLog(@"%@", error.description);
     }];
 }
 
@@ -794,7 +796,7 @@ static NSString *PROFILE_THUMB_PHOTO_NAME = @"thumb_photo.jpg";
 +(NSString *)fileURLOfProfile:(NSString *)profileId fileName:(NSString *)fileName {
     NSString *profile_base_url = [ChatManager profileBaseURL:profileId];
     NSString *file_url = [[NSString alloc] initWithFormat:@"%@%%2F%@?alt=media", profile_base_url, fileName];
-//    //NSLog(@"profile file url: %@", file_url);
+    //    //NSLog(@"profile file url: %@", file_url);
     return file_url;
 }
 
@@ -807,11 +809,12 @@ static NSString *PROFILE_THUMB_PHOTO_NAME = @"thumb_photo.jpg";
     NSString *profile_image_base_url = [chat_info_dict objectForKey:@"profile-image-base-url"];
     NSString *base_url = [[NSString alloc] initWithFormat:profile_image_base_url, bucket ];
     NSString *profile_base_url = [[NSString alloc] initWithFormat:@"%@/profiles%%2F%@", base_url, profileId];
-//    //NSLog(@"profile_base_url: %@", profile_base_url);
+    //    //NSLog(@"profile_base_url: %@", profile_base_url);
     return profile_base_url;
 }
 
 // **** PROFILE IMAGE URL - END ****
 
 @end
+
 

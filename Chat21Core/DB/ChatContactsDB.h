@@ -23,6 +23,7 @@
 
 +(ChatContactsDB*)getSharedInstance;
 -(BOOL)createDBWithName:(NSString *)name;
+- (void)closeHandle;
 
 // contacts
 -(void)insertOrUpdateContactSyncronized:(ChatUser *)contact completion:(void(^)(void)) callback;
