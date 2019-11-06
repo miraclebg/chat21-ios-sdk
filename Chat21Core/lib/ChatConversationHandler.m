@@ -88,7 +88,7 @@
 -(void)restoreMessagesFromDB {
     //NSLog(@"RESTORING ALL MESSAGES FOR CONVERSATION %@", self.conversationId);
     NSArray *inverted_messages = [[[ChatDB getSharedInstance] getAllMessagesForConversation:self.conversationId start:0 count:40] mutableCopy];
-//    //NSLog(@"DB MESSAGES NUMBER: %lu", (unsigned long) inverted_messages.count);
+    //    //NSLog(@"DB MESSAGES NUMBER: %lu", (unsigned long) inverted_messages.count);
     //NSLog(@"Restoring last 40 messages...");
     NSEnumerator *enumerator = [inverted_messages reverseObjectEnumerator];
     for (id element in enumerator) {
@@ -139,9 +139,9 @@
         
         // updates status only of messages not sent by me
         // HO RICEVUTO UN MESSAGGIO NUOVO
-//        //NSLog(@"self.senderId: %@", self.senderId);
+        //        //NSLog(@"self.senderId: %@", self.senderId);
         if (message.status < MSG_STATUS_RECEIVED && ![message.sender isEqualToString:self.senderId]) { // CONTROLLING... "message.status < MSG_STATUS_RECEIVED"
-      
+            
             //IN MODO DA EVITARE IL COSTO DI RI-AGGIORNARE CONTINUAMENTE LO STATO DI MESSAGGI CHE HANNO GIA LO STATO RECEIVED (MAGARI E' LA SINCRONIZZAZIONE DI UN NUOVO DISPOSITIVO CHE NON DEVE PIU' COMUNICARE NULLA AL MITTENTE MA SOLO SCARICARE I MESSAGGI NELLO STATO IN CUI SI TROVANO).
             // NOT RECEIVED = NEW!
             if (message.isDirect) {
@@ -159,11 +159,11 @@
         //NSLog(@"%@", error.description);
     }];
     
-//    self.updated_messages_ref_handle = [[self.messagesRef queryLimitedToLast:10] observeEventType:FEventTypeChildChanged withBlock:^(FDataSnapshot *snapshot) {
-//        //NSLog(@">>>> new UPDATED message snapshot %@", snapshot);
-//    } withCancelBlock:^(NSError *error) {
-//        //NSLog(@"%@", error.description);
-//    }];
+    //    self.updated_messages_ref_handle = [[self.messagesRef queryLimitedToLast:10] observeEventType:FEventTypeChildChanged withBlock:^(FDataSnapshot *snapshot) {
+    //        //NSLog(@">>>> new UPDATED message snapshot %@", snapshot);
+    //    } withCancelBlock:^(NSError *error) {
+    //        //NSLog(@"%@", error.description);
+    //    }];
     
     self.updated_messages_ref_handle = [self.messagesRef observeEventType:FIRDataEventTypeChildChanged withBlock:^(FIRDataSnapshot *snapshot) {
         //NSLog(@"UPDATED MESSAGE SNAPSHOT: %@", snapshot);
@@ -174,10 +174,10 @@
         ChatMessage *message = [ChatMessage messageFromfirebaseSnapshotFactory:snapshot];
         if (message.status == MSG_STATUS_SENDING || message.status == MSG_STATUS_SENT || message.status == MSG_STATUS_RETURN_RECEIPT) {
             //NSLog(@"Message updated. Data saved successfully.");
-//            int status = message.status;
-//            if (message.status == MSG_STATUS_SENDING) {
-//                status = MSG_STATUS_SENT;
-//            }
+            //            int status = message.status;
+            //            if (message.status == MSG_STATUS_SENDING) {
+            //                status = MSG_STATUS_SENT;
+            //            }
             ChatMessage *message_archived = [[ChatDB getSharedInstance] getMessageById:message.messageId];
             if (message_archived) {
                 [self updateMessageStatusInMemory:message.messageId withStatus:message.status];
@@ -188,16 +188,16 @@
                 [self insertMessageIfNotExists:message];
                 [self notifyEvent:ChatEventMessageAdded message:message];
             }
-//            [self updateMessageStatusInMemory:message.messageId withStatus:status];
-//            [self updateMessageStatusOnDB:message.messageId withStatus:status];
+            //            [self updateMessageStatusInMemory:message.messageId withStatus:status];
+            //            [self updateMessageStatusOnDB:message.messageId withStatus:status];
             //[self notifyEvent:ChatEventMessageChanged message:message];
         }
-//        else if (message.status == MSG_STATUS_RETURN_RECEIPT) {
-//            //NSLog(@"Message update: return receipt.");
-//            [self updateMessageStatusInMemory:message.messageId withStatus:message.status];
-//            [self updateMessageStatusOnDB:message.messageId withStatus:message.status];
-            //[self notifyEvent:ChatEventMessageChanged message:message];
-//        }
+        //        else if (message.status == MSG_STATUS_RETURN_RECEIPT) {
+        //            //NSLog(@"Message update: return receipt.");
+        //            [self updateMessageStatusInMemory:message.messageId withStatus:message.status];
+        //            [self updateMessageStatusOnDB:message.messageId withStatus:message.status];
+        //[self notifyEvent:ChatEventMessageChanged message:message];
+        //        }
         
     } withCancelBlock:^(NSError *error) {
         //NSLog(@"%@", error.description);
@@ -224,10 +224,10 @@
 
 -(void)insertMessageIfNotExists:(ChatMessage *)message {
     //ChatMessage *message_archived = [[ChatDB getSharedInstance] getMessageById:message.messageId];
-//    if (!message_archived) {
-        [self insertMessageInMemoryIfNotExists:message];
-        [self insertMessageOnDBIfNotExists:message];
-//    }
+    //    if (!message_archived) {
+    [self insertMessageInMemoryIfNotExists:message];
+    [self insertMessageOnDBIfNotExists:message];
+    //    }
 }
 
 -(BOOL)isValidMessageSnapshot:(FIRDataSnapshot *)snapshot {
@@ -248,10 +248,10 @@
         //NSLog(@"MSG:TIMESTAMP is mandatory. Discarding message.");
         return NO;
     }
-//    else if (snapshot.value[MSG_FIELD_STATUS] == nil) {
-//        //NSLog(@"MSG:STATUS is mandatory. Discarding message.");
-//        return NO;
-//    }
+    //    else if (snapshot.value[MSG_FIELD_STATUS] == nil) {
+    //        //NSLog(@"MSG:STATUS is mandatory. Discarding message.");
+    //        return NO;
+    //    }
     
     return YES;
 }
@@ -278,7 +278,7 @@
     ChatMessage *message = [self newBaseMessage];
     
     // save image
-//    NSString * uuid = [[NSUUID UUID] UUIDString];
+    //    NSString * uuid = [[NSUUID UUID] UUIDString];
     NSString *image_file_name = message.imageFilename;
     [self saveImageToRecipientMediaFolderAsPNG:image imageFileName:image_file_name];
     ChatMessageMetadata *imageMetadata = [[ChatMessageMetadata alloc] init];
@@ -287,7 +287,7 @@
     
     message.status = MSG_STATUS_UPLOADING;
     message.text = [[NSString alloc] initWithFormat:@"Uploading image: %@...", image_file_name];
-//    message.imageFilename = imageFilename;
+    //    message.imageFilename = imageFilename;
     message.mtype = MSG_TYPE_IMAGE;
     message.metadata = imageMetadata;
     message.attributes = [attributes mutableCopy];
@@ -313,8 +313,8 @@
                   subtype:nil
                attributes:nil
                completion:^(ChatMessage *m, NSError *error) {
-                   callback(m, error);
-               }
+        callback(m, error);
+    }
      ];
 }
 
@@ -326,9 +326,9 @@
                  metadata:nil
                attributes:attributes
                completion:^(ChatMessage *m, NSError *error) {
-                   callback(m, error);
-               }
-    ];
+        callback(m, error);
+    }
+     ];
 }
 
 -(void)sendMessageType:(NSString *)type subtype:(NSString *)subtype text:(NSString *)text imageURL:(NSString *)imageURL metadata:(ChatMessageMetadata *)metadata attributes:(NSDictionary *)attributes completion:(void(^)(ChatMessage *message, NSError *error)) callback {
@@ -392,18 +392,18 @@
         if (error) {
             //NSLog(@"Data could not be saved because of an occurred error: %@", error);
             int status = MSG_STATUS_FAILED;
-//            [self updateMessageStatusInMemory:ref.key withStatus:status];
-//            [self updateMessageStatusOnDB:message.messageId withStatus:status];
-//            [self notifyEvent:ChatEventMessageChanged message:message];
+            //            [self updateMessageStatusInMemory:ref.key withStatus:status];
+            //            [self updateMessageStatusOnDB:message.messageId withStatus:status];
+            //            [self notifyEvent:ChatEventMessageChanged message:message];
             [self updateMessageStatus:status forMessage:message];
             callback(message, error);
         } else {
             //NSLog(@"Data saved successfully. Updating status & reloading tableView.");
             int status = MSG_STATUS_SENT;
             NSAssert([ref.key isEqualToString:message.messageId], @"REF.KEY %@ different by MESSAGE.ID %@",ref.key, message.messageId);
-//            [self updateMessageStatusInMemory:message.messageId withStatus:status];
-//            [self updateMessageStatusOnDB:message.messageId withStatus:status];
-//            [self notifyEvent:ChatEventMessageChanged message:message];
+            //            [self updateMessageStatusInMemory:message.messageId withStatus:status];
+            //            [self updateMessageStatusOnDB:message.messageId withStatus:status];
+            //            [self notifyEvent:ChatEventMessageChanged message:message];
             [self updateMessageStatus:status forMessage:message];
             callback(message, error);
         }
@@ -419,12 +419,12 @@
 -(void)sendMessageToGroup:(ChatMessage *)message completion:(void(^)(ChatMessage *message, NSError *error))callback {
     // create firebase reference
     FIRDatabaseReference *messageRef = [self.messagesRef child:message.messageId];
-//    FIRDatabaseReference *messageRef = [self.messagesRef childByAutoId]; // CHILD'S AUTOGEN UNIQUE ID
-//    message.messageId = messageRef.key;
-//    // save message locally
-//    [self insertMessageInMemory:message];
-//    [self insertMessageOnDBIfNotExists:message];
-//    [self notifyEvent:ChatEventMessageAdded message:message];
+    //    FIRDatabaseReference *messageRef = [self.messagesRef childByAutoId]; // CHILD'S AUTOGEN UNIQUE ID
+    //    message.messageId = messageRef.key;
+    //    // save message locally
+    //    [self insertMessageInMemory:message];
+    //    [self insertMessageOnDBIfNotExists:message];
+    //    [self notifyEvent:ChatEventMessageAdded message:message];
     // save message to firebase
     NSMutableDictionary *message_dict = [message asFirebaseMessage];
     //NSLog(@"(Group) Sending message to Firebase:(%@) %@ %@ %d dict: %@",messageRef, message.text, message.messageId, message.status, message_dict);
@@ -530,13 +530,13 @@
     }
     else {
         NSUInteger newIndex = [self.messages indexOfObject:message
-                                     inSortedRange:(NSRange){0, [self.messages count]}
-                                           options:NSBinarySearchingInsertionIndex
+                                             inSortedRange:(NSRange){0, [self.messages count]}
+                                                   options:NSBinarySearchingInsertionIndex
                                            usingComparator:^NSComparisonResult(id a, id b) {
-                                               NSDate *first = [(ChatMessage *)a date];
-                                               NSDate *second = [(ChatMessage *)b date];
-                                               return [first compare:second];
-                                           }];
+            NSDate *first = [(ChatMessage *)a date];
+            NSDate *second = [(ChatMessage *)b date];
+            return [first compare:second];
+        }];
         [self.messages insertObject:message atIndex:newIndex];
     }
 }
@@ -613,11 +613,11 @@
         return;
     }
     
-//    // test
-//    for (NSNumber *event_key in self.eventObservers) {
-//        NSMutableDictionary *eventCallbacks = [self.eventObservers objectForKey:event_key];
-//        //NSLog(@"Removing callback for event %@. Callback: %@",event_key, [eventCallbacks objectForKey:@(event_handler)]);
-//    }
+    //    // test
+    //    for (NSNumber *event_key in self.eventObservers) {
+    //        NSMutableDictionary *eventCallbacks = [self.eventObservers objectForKey:event_key];
+    //        //NSLog(@"Removing callback for event %@. Callback: %@",event_key, [eventCallbacks objectForKey:@(event_handler)]);
+    //    }
     
     // iterate all keys (events)
     for (NSNumber *event_key in self.eventObservers) {
@@ -625,10 +625,10 @@
         [eventCallbacks removeObjectForKey:@(event_handle)];
     }
     
-//    for (NSNumber *event_key in self.eventObservers) {
-//        NSMutableDictionary *eventCallbacks = [self.eventObservers objectForKey:event_key];
-//        //NSLog(@"After removed callback for event %@. Callback: %@",event_key, [eventCallbacks objectForKey:@(event_handler)]);
-//    }
+    //    for (NSNumber *event_key in self.eventObservers) {
+    //        NSMutableDictionary *eventCallbacks = [self.eventObservers objectForKey:event_key];
+    //        //NSLog(@"After removed callback for event %@. Callback: %@",event_key, [eventCallbacks objectForKey:@(event_handler)]);
+    //    }
 }
 
 -(void)removeAllObservers {
@@ -677,9 +677,9 @@
         //NSLog(@"Image saved to gallery.");
     }
     /*NSArray *directoryList = [filemgr contentsOfDirectoryAtPath:mediaPath error:nil];
-    for (id file in directoryList) {
-        //NSLog(@"file: %@", file);
-    }*/
+     for (id file in directoryList) {
+     //NSLog(@"file: %@", file);
+     }*/
 }
 
 @end

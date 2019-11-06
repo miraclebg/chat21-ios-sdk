@@ -303,6 +303,10 @@ static ChatManager *sharedInstance = nil;
         self.contactsSynchronizer = nil;
     }
     self.loggedUser = nil;
+    
+    [[ChatContactsDB getSharedInstance] closeHandle];
+    [[ChatDB getSharedInstance] closeHandle];
+    [[ChatGroupsDB getSharedInstance] closeHandle];
 }
 
 // === GROUPS ===

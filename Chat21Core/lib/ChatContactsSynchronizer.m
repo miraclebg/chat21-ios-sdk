@@ -14,7 +14,7 @@
 #import <Firebase/Firebase.h>
 
 @interface ChatContactsSynchronizer () {
-//    dispatch_queue_t serialDatabaseQueue;
+    //    dispatch_queue_t serialDatabaseQueue;
 }
 @end
 
@@ -25,7 +25,7 @@
         self.rootRef = [[FIRDatabase database] reference];
         self.tenant = tenant;
         self.loggeduser = user;
-//        serialDatabaseQueue = dispatch_queue_create("db.sqllite", DISPATCH_QUEUE_SERIAL);
+        //        serialDatabaseQueue = dispatch_queue_create("db.sqllite", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -52,7 +52,7 @@
 
 -(void)startSynchro {
     if (![self getFirstSynchroOver]) {
-//        [[ContactsDB getSharedInstance] drop_database]; // can be corrupted by incomplete synch for app crashs
+        //        [[ContactsDB getSharedInstance] drop_database]; // can be corrupted by incomplete synch for app crashs
         self.synchronizing = YES;
     }
     else {
@@ -60,17 +60,17 @@
     }
     [self synchContacts];
     
-//    [self setFirstSynchro:NO];
-//    if (![self getFirstSynchro]) {
-//        //NSLog(@"Synch local contacts");
-//        [self firstLoadWithCompletion:^() {
-//            //NSLog(@"Local contacts end");
-//            [self synchFirebase];
-//        }];
-//    }
-//    else {
-//        [self synchContacts];
-//    }
+    //    [self setFirstSynchro:NO];
+    //    if (![self getFirstSynchro]) {
+    //        //NSLog(@"Synch local contacts");
+    //        [self firstLoadWithCompletion:^() {
+    //            //NSLog(@"Local contacts end");
+    //            [self synchFirebase];
+    //        }];
+    //    }
+    //    else {
+    //        [self synchContacts];
+    //    }
 }
 
 -(void)synchContacts {
@@ -85,7 +85,7 @@
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
                 ChatUser *contact = [ChatContactsSynchronizer contactFromSnapshotFactory:snapshot];
                 if (contact) {
-//                    //NSLog(@"FIREBASE: NEW CONTACT id: %@ firstname: %@ fullname: %@",contact.userId, contact.firstname, contact.fullname);
+                    //                    //NSLog(@"FIREBASE: NEW CONTACT id: %@ firstname: %@ fullname: %@",contact.userId, contact.firstname, contact.fullname);
                     [self insertOrUpdateContactOnDB:contact];
                 }
             });
@@ -130,15 +130,15 @@
 -(void)startSynchTimer {
     dispatch_async(dispatch_get_main_queue(), ^{
         self.synchronizing = YES;
-//       if (self.synchTimer) {
-//           if ([self.synchTimer isValid]) {
-//               [self.synchTimer invalidate];
-//           }
-//           self.synchTimer = nil;
-//       }
+        //       if (self.synchTimer) {
+        //           if ([self.synchTimer isValid]) {
+        //               [self.synchTimer invalidate];
+        //           }
+        //           self.synchTimer = nil;
+        //       }
         [self resetSynchTimer];
         self.synchTimer = [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(synchTimerPaused:) userInfo:nil repeats:NO];
-   });
+    });
 }
 
 -(void)synchTimerPaused:(NSTimer *)timer {
@@ -206,7 +206,7 @@ static NSString *FIRST_SYNCHRO_KEY = @"first-contacts-synchro";
 //}
 
 -(void)insertOrUpdateContactOnDB:(ChatUser *)user {
-//    //NSLog(@"INSERTING OR UPDATING CONTACT WITH NAME: %@ (%@ %@)", user.userId, user.firstname, user.lastname);
+    //    //NSLog(@"INSERTING OR UPDATING CONTACT WITH NAME: %@ (%@ %@)", user.userId, user.firstname, user.lastname);
     __block ChatUser *_user = user;
     [[ChatContactsDB getSharedInstance] insertOrUpdateContactSyncronized:_user completion:^{
         //self.synchronizing ? //NSLog(@"SYNCHRONIZING") : //NSLog(@"NO-SYNCHRONIZING");
@@ -221,9 +221,9 @@ static NSString *FIRST_SYNCHRO_KEY = @"first-contacts-synchro";
 }
 
 -(void)dispose {
-//    [self.contactsRef removeObserverWithHandle:self.contact_ref_handle_added];
-//    [self.contactsRef removeObserverWithHandle:self.contact_ref_handle_changed];
-//    [self.contactsRef removeObserverWithHandle:self.contact_ref_handle_removed];
+    //    [self.contactsRef removeObserverWithHandle:self.contact_ref_handle_added];
+    //    [self.contactsRef removeObserverWithHandle:self.contact_ref_handle_changed];
+    //    [self.contactsRef removeObserverWithHandle:self.contact_ref_handle_removed];
     [self.contactsRef removeAllObservers];
 }
 

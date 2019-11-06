@@ -16,7 +16,7 @@
 
 -(id)initWithTenant:(NSString *)tenant user:(ChatUser *)user {
     if (self = [super init]) {
-//        self.firebaseRef = firebaseRef;
+        //        self.firebaseRef = firebaseRef;
         self.rootRef = [[FIRDatabase database] reference];
         self.tenant = tenant;
         self.loggeduser = user;
@@ -45,7 +45,7 @@
     FIRDatabaseReference *myConnectionsRef = [ChatPresenceHandler onlineRefForUser:userid];
     FIRDatabaseReference *lastOnlineRef = [ChatPresenceHandler lastOnlineRefForUser:userid];
     
-//    NSString *connectedRefURL = [[NSString alloc] initWithFormat:@"%@/.info/connected", self.firebaseRef];
+    //    NSString *connectedRefURL = [[NSString alloc] initWithFormat:@"%@/.info/connected", self.firebaseRef];
     NSString *connectedRefURL = @"/.info/connected";
     FIRDatabaseReference *connectedRef = [[[FIRDatabase database] reference] child:connectedRefURL];
     if (self.connectionsRefHandle) {
@@ -82,14 +82,14 @@
     FIRDatabaseReference *onlineRef = [ChatPresenceHandler onlineRefForUser:userid];
     [onlineRef observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
         if(snapshot.exists) {
-//            //NSLog(@"ONLINE: %@", snapshot);
+            //            //NSLog(@"ONLINE: %@", snapshot);
             callback(YES);
-//            self.online = YES;
-//            [self onlineStatus];
+            //            self.online = YES;
+            //            [self onlineStatus];
         } else {
             callback(NO);
-//            self.online = NO;
-//            [self onlineStatus];
+            //            self.online = NO;
+            //            [self onlineStatus];
         }
     }];
 }

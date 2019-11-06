@@ -19,7 +19,7 @@
 
 -(id)initWithTenant:(NSString *)tenant user:(ChatUser *)user {
     if (self = [super init]) {
-//        self.lastEventHandler = 1;
+        //        self.lastEventHandler = 1;
         //        self.firebaseRef = firebaseRef;
         self.rootRef = [[FIRDatabase database] reference];
         self.tenant = tenant;
@@ -43,9 +43,9 @@
 -(void)printAllConversations {
     //NSLog(@"***** CONVERSATIONS DUMP **************************");
     /*NSMutableArray *conversations = [[[ChatDB getSharedInstance] getAllConversations] mutableCopy];
-    for (ChatConversation *c in conversations) {
-        //NSLog(@"id: %@, user: %@ date: %@",c.conversationId, c.user, c.date);
-    }*/
+     for (ChatConversation *c in conversations) {
+     //NSLog(@"id: %@, user: %@ date: %@",c.conversationId, c.user, c.date);
+     }*/
     //NSLog(@"******************************* END.");
 }
 
@@ -82,7 +82,7 @@
     [self.conversationsRef keepSynced:YES];
     
     // TEST
-//    [self printAllConversations];
+    //    [self printAllConversations];
     
     NSInteger lasttime = 0;
     NSMutableArray *conversations = self.conversations;
@@ -94,8 +94,8 @@
     }
     //  queryLimitedToLast:20]
     self.conversations_ref_handle_added = [[[self.conversationsRef queryOrderedByChild:@"timestamp"]
-                                             queryStartingAtValue:@(lasttime)]
-                                             observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot *snapshot) {
+                                            queryStartingAtValue:@(lasttime)]
+                                           observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot *snapshot) {
         //NSLog(@"NEW CONVERSATION SNAPSHOT: %@", snapshot);
         if (![self isValidConversationSnapshot:snapshot]) {
             //NSLog(@"Invalid conversation snapshot, discarding.");
@@ -109,17 +109,17 @@
             //NSLog(@"UPDATING IS_NEW=NO FOR CONVERSATION %@", conversation_ref);
             [chatm updateConversationIsNew:conversation_ref is_new:conversation.is_new];
         }
-//        if (conversation.status == CONV_STATUS_FAILED) {
-//            // a remote conversation can't be in failed status. force to last_message status
-//            // if the sender WRONGLY set the conversation STATUS to 0 this will block the access to the conversation.
-//            // IN FUTURE SERVER-SIDE HANDLING OF MESSAGE SENDING, WILL BE THE SERVER-SIDE SCRIPT RESPONSIBLE OF SETTING THE CONV STATUS AND THIS VERIFICATION CAN BE REMOVED.
-//            conversation.status = CONV_STATUS_LAST_MESSAGE;
-//        }
+        //        if (conversation.status == CONV_STATUS_FAILED) {
+        //            // a remote conversation can't be in failed status. force to last_message status
+        //            // if the sender WRONGLY set the conversation STATUS to 0 this will block the access to the conversation.
+        //            // IN FUTURE SERVER-SIDE HANDLING OF MESSAGE SENDING, WILL BE THE SERVER-SIDE SCRIPT RESPONSIBLE OF SETTING THE CONV STATUS AND THIS VERIFICATION CAN BE REMOVED.
+        //            conversation.status = CONV_STATUS_LAST_MESSAGE;
+        //        }
         conversation.archived = NO;
         [self insertConversationInMemory:conversation];
         [self insertOrUpdateConversationOnDB:conversation];
         [self notifyEvent:ChatEventConversationAdded conversation:conversation];
-//        [self startConversationMessagesHandler:conversation];
+        //        [self startConversationMessagesHandler:conversation];
     } withCancelBlock:^(NSError *error) {
         //NSLog(@"%@", error.description);
     }];
@@ -144,7 +144,7 @@
         
         [self updateConversationInMemory:conversation];
         [self insertOrUpdateConversationOnDB:conversation];
-//        [self startConversationMessagesHandler:conversation];
+        //        [self startConversationMessagesHandler:conversation];
         conversation.indexInMemory = found_index; // Next step: create an event object with properties .conversation, .indexInMemory. For the moment the conversation will hold his position in memory array.
         if ([conversation.date isEqualToDate:found_conversation.date]) {
             [self notifyEvent:ChatEventConversationReadStatusChanged conversation:conversation];
@@ -181,9 +181,9 @@
         if ([self.conversations[i].conversationId isEqualToString:conversationId]) {
             
             return @{
-                     @"conversation": self.conversations[i],
-                     @"index": @(i)
-                    };
+                @"conversation": self.conversations[i],
+                @"index": @(i)
+            };
         }
     }
     return nil;
@@ -198,7 +198,7 @@
     FIRDatabaseReference *rootRef = [[FIRDatabase database] reference];
     self.archivedConversationsRef = [rootRef child: archived_conversations_path];
     [self.archivedConversationsRef keepSynced:YES];
-
+    
     NSInteger lasttime = 0;
     NSMutableArray *conversations = self.archivedConversations;
     if (conversations && conversations.count > 0) {
@@ -215,12 +215,12 @@
             return;
         }
         ChatConversation *conversation = [ChatConversation conversationFromSnapshotFactory:snapshot me:self.loggeduser];
-//        if (conversation.status == CONV_STATUS_FAILED) {
-//            // a remote conversation can't be in failed status. force to last_message status
-//            // if the sender WRONGLY set the conversation STATUS to 0 this will block the access to the conversation.
-//            // IN FUTURE SERVER-SIDE HANDLING OF MESSAGE SENDING, WILL BE THE SERVER-SIDE SCRIPT RESPONSIBLE OF SETTING THE CONV STATUS AND THIS VERIFICATION CAN BE REMOVED.
-//            conversation.status = CONV_STATUS_LAST_MESSAGE;
-//        }
+        //        if (conversation.status == CONV_STATUS_FAILED) {
+        //            // a remote conversation can't be in failed status. force to last_message status
+        //            // if the sender WRONGLY set the conversation STATUS to 0 this will block the access to the conversation.
+        //            // IN FUTURE SERVER-SIDE HANDLING OF MESSAGE SENDING, WILL BE THE SERVER-SIDE SCRIPT RESPONSIBLE OF SETTING THE CONV STATUS AND THIS VERIFICATION CAN BE REMOVED.
+        //            conversation.status = CONV_STATUS_LAST_MESSAGE;
+        //        }
         conversation.archived = YES;
         [self insertArchivedConversationInMemory:conversation];
         [self insertOrUpdateConversationOnDB:conversation];
@@ -228,7 +228,7 @@
     } withCancelBlock:^(NSError *error) {
         //NSLog(@"%@", error.description);
     }];
-
+    
     self.archived_conversations_ref_handle_removed =
     [self.archivedConversationsRef observeEventType:FIRDataEventTypeChildRemoved withBlock:^(FIRDataSnapshot *snapshot) {
         //NSLog(@"REMOVED ARCHIVED CONVERSATION snapshot............... %@", snapshot);
@@ -371,7 +371,7 @@
 
 -(void)unarchiveConversation:(ChatConversation *)conversation {
     [self removeArchivedConversationInMemory:conversation];
-//    conversation.user = self.me; // UNUSEFUL, THE USER IS SET BY ChatConversatioN.conversationFromSnapshotFactory
+    //    conversation.user = self.me; // UNUSEFUL, THE USER IS SET BY ChatConversatioN.conversationFromSnapshotFactory
     conversation.archived = NO;
     [[ChatDB getSharedInstance] insertOrUpdateConversation:conversation];
 }
