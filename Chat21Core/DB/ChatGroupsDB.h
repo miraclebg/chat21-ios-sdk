@@ -19,6 +19,7 @@
 
 +(ChatGroupsDB*)getSharedInstance;
 -(BOOL)createDBWithName:(NSString *)name;
+- (void)closeHandle;
 
 // groups
 -(void)insertOrUpdateGroupSyncronized:(ChatGroup *)group completion:(void(^)()) callback;

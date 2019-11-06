@@ -203,16 +203,18 @@ static ChatManager *sharedInstance = nil;
 }
 
 -(void)startWithUser:(ChatUser *)user {
-    [self dispose];
-    self.loggedUser = user;
-    ChatDB *chatDB = [ChatDB getSharedInstance];
-    [chatDB createDBWithName:user.userId];
-    ChatContactsDB *contactsDB = [ChatContactsDB getSharedInstance];
-    [contactsDB createDBWithName:user.userId];
-    ChatGroupsDB *groupsDB = [ChatGroupsDB getSharedInstance];
-    [groupsDB createDBWithName:user.userId];
-    [self initConnectionStatusHandler];
-    [self startAuthStatusListner];
+    if (user && user.userId && user.userId.length) {
+        [self dispose];
+        self.loggedUser = user;
+        ChatDB *chatDB = [ChatDB getSharedInstance];
+        [chatDB createDBWithName:user.userId];
+        ChatContactsDB *contactsDB = [ChatContactsDB getSharedInstance];
+        [contactsDB createDBWithName:user.userId];
+        ChatGroupsDB *groupsDB = [ChatGroupsDB getSharedInstance];
+        [groupsDB createDBWithName:user.userId];
+        [self initConnectionStatusHandler];
+        [self startAuthStatusListner];
+    }
 }
 
 -(void)initGroupsHandler {
@@ -301,6 +303,10 @@ static ChatManager *sharedInstance = nil;
         self.contactsSynchronizer = nil;
     }
     self.loggedUser = nil;
+    
+    [[ChatContactsDB getSharedInstance] closeHandle];
+    [[ChatDB getSharedInstance] closeHandle];
+    [[ChatGroupsDB getSharedInstance] closeHandle];
 }
 
 // === GROUPS ===
