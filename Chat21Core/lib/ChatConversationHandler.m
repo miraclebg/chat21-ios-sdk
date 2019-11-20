@@ -338,6 +338,7 @@
         message.text = text;
     }
     if (imageURL) {
+        message.metadata = message.metadata ?: [ChatMessageMetadata new];
         message.metadata.src = imageURL;
     }
     message.mtype = type;
