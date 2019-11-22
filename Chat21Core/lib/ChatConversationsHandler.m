@@ -50,7 +50,9 @@
 }
 
 -(void)restoreConversationsFromDB {
-    self.conversations = [[[ChatDB getSharedInstance] getAllConversationsForUser:self.me archived:NO limit:0] mutableCopy];
+    NSArray *conversations = [[ChatDB getSharedInstance] getAllConversationsForUser:self.me archived:NO limit:0];
+    
+    self.conversations = conversations ? conversations.mutableCopy : @[].mutableCopy;
     self.archivedConversations = [[[ChatDB getSharedInstance] getAllConversationsForUser:self.me archived:YES limit:150] mutableCopy];
 }
 
