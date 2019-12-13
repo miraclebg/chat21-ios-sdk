@@ -7,7 +7,7 @@
 //
 
 #import "ChatStringUtil.h"
-#import "ChatLocal.h"
+#import "Common.h"
 
 @implementation ChatStringUtil
 
@@ -31,32 +31,33 @@
     double startDateInSeconds = [date timeIntervalSince1970];
     double secondsElapsed = nowInSeconds - startDateInSeconds;
     if (secondsElapsed < 60) {
-        timeMessagePart = [ChatLocal translate:@"FewSecondsAgoLKey"];
+        timeMessagePart = [LI18n localizedString:@"a few seconds ago"];
         unitMessagePart = @"";
     }
     else if (secondsElapsed >= 60 && secondsElapsed <120) {
-        timeMessagePart = [ChatLocal translate:@"AboutAMinuteAgoLKey"];
+        timeMessagePart = [LI18n localizedString:@"about a minute ago"];
         unitMessagePart = @"";
     }
     else if (secondsElapsed >= 120 && secondsElapsed <3600) {
         int minutes = secondsElapsed / 60.0;
         timeMessagePart = [[NSString alloc] initWithFormat:@"%d ", minutes];
-        unitMessagePart = [ChatLocal translate:@"MinutesAgoLKey"];
+        unitMessagePart = [LI18n localizedString:@"minutes ago"];
     }
     else if (secondsElapsed >=3600 && secondsElapsed < 5400) {
-        timeMessagePart = [ChatLocal translate:@"AboutAnHourAgoLKey"];
+        timeMessagePart = [LI18n localizedString:@"about an hour ago"];
         unitMessagePart = @"";
     }
     else if (secondsElapsed >= 5400 && secondsElapsed <= 86400) {
         int hours = secondsElapsed / 3600.0;
         timeMessagePart = [[NSString alloc] initWithFormat:@"%d ", hours];
-        unitMessagePart = [ChatLocal translate:@"HoursAgoLKey"];
+        unitMessagePart = [LI18n localizedString:@"hours ago"];
     }
     else {
         NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
         // http://mobiledevelopertips.com/cocoa/date-formatters-examples-take-2.html
-        [dateFormat setDateFormat:[ChatLocal translate:@"TimeToStringDateFormat"]];
+        [dateFormat setDateFormat:@"d/M/yyyy HH:mm:ss"];
         NSString *dateString = [[dateFormat stringFromDate:date] capitalizedString];
+        //        timeMessagePart = [NSString stringWithFormat:@"%@ %@",NSLocalizedString(@"theLKey", nil), dateString];
         timeMessagePart = dateString;
         unitMessagePart = @"";
     }
@@ -71,12 +72,12 @@
     
     NSCalendar *calendar = [NSCalendar currentCalendar];
     
-    [calendar rangeOfUnit:NSDayCalendarUnit startDate:&fromDate
+    [calendar rangeOfUnit:NSCalendarUnitDay startDate:&fromDate
                  interval:NULL forDate:fromDateTime];
-    [calendar rangeOfUnit:NSDayCalendarUnit startDate:&toDate
+    [calendar rangeOfUnit:NSCalendarUnitDay startDate:&toDate
                  interval:NULL forDate:toDateTime];
     
-    NSDateComponents *difference = [calendar components:NSDayCalendarUnit
+    NSDateComponents *difference = [calendar components:NSCalendarUnitDay
                                                fromDate:fromDate toDate:toDate options:0];
     
     return [difference day];

@@ -22,7 +22,10 @@
 -(void)deleteImage:(NSString*)imageKey;
 -(void)empty;
 
+//+(ChatImageCache *)getSharedInstance;
 +(NSString *)filePathInApp:(NSString *)path;
+//-(ChatImageWrapper *)restoreImageWithKey:(NSString *)imageKey;
+//-(void)listAllImagesFromDisk;
 
 +(ChatImageCache *)getSharedInstance;
 

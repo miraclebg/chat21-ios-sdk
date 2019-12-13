@@ -8,9 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import "ChatGroupsSubscriber.h"
-#import "FirebaseDatabase/FIRDatabaseQuery.h"
+#import <Firebase/Firebase.h>
 
-@class FIRDatabaseReference;
 @class FirebaseCustomAuthHelper;
 @class Firebase;
 @class ChatUser;
@@ -18,7 +17,7 @@
 
 @interface ChatGroupsHandler : NSObject
 
-@property (strong, nonatomic) ChatUser * _Nullable loggeduser;
+@property (strong, nonatomic) ChatUser * loggeduser;
 @property (strong, nonatomic) NSString *me;
 @property (strong, nonatomic) FirebaseCustomAuthHelper *authHelper;
 @property (strong, nonatomic) NSMutableDictionary *groups;
@@ -33,7 +32,7 @@
 //@property (strong, nonatomic) NSString *firebaseRef;
 @property (nonatomic, strong) FIRDatabaseReference *rootRef;
 @property (strong, nonatomic) NSString *tenant;
-@property (strong, nonnull) NSMutableArray<id<ChatGroupsSubscriber>> *subscribers;
+@property (strong) NSMutableArray<id<ChatGroupsSubscriber>> *subscribers;
 
 //-(id)initWithFirebaseRef:(NSString *)firebaseRef tenant:(NSString *)tenant user:(SHPUser *)user;
 -(id)initWithTenant:(NSString *)tenant user:(ChatUser *)user;

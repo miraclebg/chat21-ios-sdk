@@ -7,13 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "FirebaseDatabase/FIRDataSnapshot.h"
-#import "FirebaseAuth/FIRAuth.h"
-#import "FirebaseStorage/FirebaseStorage.h"
-
-@import UIKit;
-
-typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
+#import <Firebase/Firebase.h>
 
 @class ChatConversationHandler;
 @class ChatConversationsHandler;
@@ -30,31 +24,16 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 @class ChatConversationHandler;
 @class ChatConnectionStatusHandler;
 @class ChatDiskImageCache;
-@class ChatMessage;
 
-static int const CHAT_LOG_LEVEL_ERROR = 0;
-static int const CHAT_LOG_LEVEL_WARNING = 1;
-static int const CHAT_LOG_LEVEL_INFO = 2;
-static int const CHAT_LOG_LEVEL_DEBUG = 3;
-
-static NSString *CHAT_DEFAULT_TENANT = @"chat";
-
-// CONFIG KEYS
-static NSString *CHAT_CONFIG_KEY_TENANT = @"tenant";
-static NSString *CHAT_CONFIG_KEY_GROUPS_MODE = @"groups-mode";
-static NSString *CHAT_CONFIG_KEY_SYNCHRONIZE_CONTACTS = @"synchronize-contacts";
-static NSString *CHAT_CONFIG_KEY_CONVERSATIONS_TABBAR_INDEX = @"conversations-tabbar-index";
-static NSString *CHAT_CONFIG_KEY_SHOW_WRITE_TO = @"show-write-to";
-static NSString *CHAT_CONFIG_KEY_SHOW_ARCHIVED = @"show-archived";
-static NSString *CHAT_CONFIG_KEY_LOG_LEVEL = @"log-level";
+typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 
 @interface ChatManager : NSObject
 
-// services' plist properties
+// plist properties
+@property (nonatomic, strong) NSString *tenant;
 @property (nonatomic, strong) NSString *baseURL;
 @property (nonatomic, strong) NSString *archiveConversationURI;
 @property (nonatomic, strong) NSString *archiveAndCloseSupportConversationURI;
-@property (nonatomic, strong) NSString *profileImageBaseURL;
 @property (nonatomic, strong) NSString *deleteProfilePhotoURI;
 
 @property (nonatomic, strong) ChatUser *loggedUser;
@@ -65,37 +44,32 @@ static NSString *CHAT_CONFIG_KEY_LOG_LEVEL = @"log-level";
 @property (nonatomic, strong) ChatGroupsHandler *groupsHandler;
 @property (nonatomic, strong) ChatContactsSynchronizer *contactsSynchronizer;
 @property (nonatomic, strong) ChatDiskImageCache *imageCache;
+//@property (nonatomic, strong) ChatConversationsVC * conversationsVC;
 @property (strong, nonatomic) FIRAuthStateDidChangeListenerHandle authStateDidChangeListenerHandle;
-
-// CONFIG
-@property (nonatomic, strong) NSString *tenant;
-@property (assign, nonatomic) NSInteger tabBarIndex;
+//@property (assign, nonatomic) FIRDatabaseHandle connectedRefHandle;
 @property (assign, nonatomic) BOOL groupsMode;
-@property (assign, nonatomic) BOOL synchronizeContacts;
-@property (assign, nonatomic) BOOL showWriteTo;
-@property (assign, nonatomic) BOOL showArchived;
-@property (assign, nonatomic) NSInteger logLevel;
+@property (assign, nonatomic) NSInteger tabBarIndex;
 
++(void)configureWithAppId:(NSString *)app_id;
 +(void)configure;
-+(void)configureWith:(NSDictionary *)config;
-
 +(ChatManager *)getInstance;
 -(void)getContactLocalDB:(NSString *)userid withCompletion:(void(^)(ChatUser *user))callback;
 -(void)getUserInfoRemote:(NSString *)userid withCompletion:(void(^)(ChatUser *user))callback;
 
 -(void)addConversationHandler:(ChatConversationHandler *)handler;
 -(ChatConversationsHandler *)getAndStartConversationsHandler;
-//-(ChatConversationHandler *)getConversationHandlerForRecipient:(ChatUser *)recipient;
-//-(ChatConversationHandler *)getConversationHandlerForGroup:(ChatGroup *)group;
--(void)getConversationHandlerForRecipient:(ChatUser *)recipient completion:(void(^)(ChatConversationHandler *)) callback;
--(void)getConversationHandlerForGroup:(ChatGroup *)group completion:(void(^)(ChatConversationHandler *)) callback;
+-(ChatConversationHandler *)getConversationHandlerForRecipient:(ChatUser *)recipient;
+-(ChatConversationHandler *)getConversationHandlerForGroup:(ChatGroup *)group;
 //-(void)startConversationHandler:(ChatConversation *)conv;
+
+- (void)initPresenceHandler;
 
 -(ChatConversationsHandler *)createConversationsHandler;
 -(ChatPresenceHandler *)createPresenceHandler;
 -(ChatGroupsHandler *)createGroupsHandlerForUser:(ChatUser *)user;
 -(ChatContactsSynchronizer *)createContactsSynchronizerForUser:(ChatUser *)user;
 
+//-(void)createGroupFromPushNotificationWithName:(NSString *)groupName groupId:(NSString *)groupId;
 -(void)registerForNotifications:(NSData *)devToken;
 
 -(void)startWithUser:(ChatUser *)user;
@@ -116,12 +90,11 @@ static NSString *CHAT_CONFIG_KEY_LOG_LEVEL = @"log-level";
 
 // === CONVERSATIONS ===
 
--(void)removeConversation:(ChatConversation *)conversation;
--(void)updateConversationIsNew:(FIRDatabaseReference *)conversationRef is_new:(int)is_new;
-
+//-(void)createOrUpdateConversation:(ChatConversation *)conversation;
 -(void)removeConversationForUser:(FIRDatabaseReference *)conversationRef userId:(NSInteger)otherUserId callback:(ChatManagerCompletedBlock)callback;
 -(void)removeConversation:(ChatConversation *)conversation callback:(ChatManagerCompletedBlock)callback;
 -(void)removeConversationFromDB:(NSString *)conversationId;
+-(void)updateConversationIsNew:(FIRDatabaseReference *)conversationRef is_new:(int)is_new;
 
 - (void)removeConversationMessage:(BOOL)removeBothMessages
                    conversationId:(NSString*)conversationId
@@ -131,16 +104,11 @@ static NSString *CHAT_CONFIG_KEY_LOG_LEVEL = @"log-level";
               messagesRefReceiver:(FIRDatabaseReference *)messagesRefReceiver
                         messageId:(NSString*)messageId callback:(ChatManagerCompletedBlock)callback;
 
-
 // === CONTACTS ===
 -(void)createContactFor:(ChatUser *)user withCompletionBlock:(void (^)(NSError *))completionBlock;
--(void)updateContactFor:(NSString *)userId ImageChagedWithCompletionBlock:(void (^)(NSError *))completionBlock;
 
 -(void)removeInstanceId;
 -(void)loadGroup:(NSString *)group_id completion:(void (^)(ChatGroup* group, BOOL error))callback;
-
--(FIRStorageReference *)uploadProfileImage:(UIImage *)image profileId:(NSString *)profileId completion:(void(^)(NSString *downloadURL, NSError *error))callback progressCallback:(void(^)(double fraction))progressCallback;
--(void)deleteProfileImage:(NSString *)profileId completion:(void(^)(NSError *error))callback;
 
 // profile image
 // paths
@@ -151,18 +119,6 @@ static NSString *CHAT_CONFIG_KEY_LOG_LEVEL = @"log-level";
 +(NSString *)profileThumbImageURLOf:(NSString *)profileId;
 +(NSString *)fileURLOfProfile:(NSString *)profileId fileName:(NSString *)fileName;
 +(NSString *)profileBaseURL:(NSString *)profileId;
-
-// LOG
-+(void)logDebug:(NSString*)text, ...;
-+(void)logInfo:(NSString*)text, ...;
-+(void)logError:(NSString*)text, ...;
-+(void)logWarn:(NSString*)text, ...;
-
-@property (nonatomic, copy) ChatMessage *(^onBeforeMessageSend)(ChatMessage *msg);
-@property (nonatomic, copy) ChatMessage *(^onMessageNew)(ChatMessage *msg);
-@property (nonatomic, copy) ChatMessage *(^onMessageUpdate)(ChatMessage *msg);
-@property (nonatomic, copy) ChatConversation *(^onCoversationArrived)(ChatConversation *conv);
-@property (nonatomic, copy) ChatConversation *(^onCoversationUpdated)(ChatConversation *conv);
 
 @end
 

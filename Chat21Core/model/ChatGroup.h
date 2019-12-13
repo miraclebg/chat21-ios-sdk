@@ -15,8 +15,9 @@ static NSString* const GROUP_NAME = @"name";
 static NSString* const GROUP_MEMBERS = @"members";
 static NSString* const GROUP_ICON_ID = @"iconID";
 
+#import "Firebase.h"
+
 @class FDataSnapshot;
-@class FIRDatabaseReference;
 @class HelloApplicationContext;
 @class ChatUser;
 
@@ -47,7 +48,7 @@ static NSString* const GROUP_ICON_ID = @"iconID";
 +(NSString *)membersDictionary2String:(NSDictionary *)membersDictionary;
 +(NSMutableDictionary *)membersString2Dictionary:(NSString *)membersString;
 -(NSString *)ownerFullname;
--(void)completeGroupMembersMetadataWithCompletionBlock:(void(^)(void)) callback;
+-(void)completeGroupMembersMetadataWithCompletionBlock:(void(^)()) callback;
 -(id)initWithGroupId:(NSString *)groupId name:(NSString *)name;
 
 @end

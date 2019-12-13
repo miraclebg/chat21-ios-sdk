@@ -8,13 +8,12 @@
 
 #import <Foundation/Foundation.h>
 #import "ChatEventType.h"
+#import <Firebase/Firebase.h>
 #import <UIKit/UIKit.h>
-#import "FirebaseDatabase/FIRDatabaseQuery.h"
 
 @class FAuthData;
 @class FirebaseCustomAuthHelper;
 @class Firebase;
-@class FIRDatabaseReference;
 @class ChatUser;
 @class ChatGroup;
 @class ChatMessage;
@@ -39,6 +38,7 @@
 @property (strong, nonatomic) FIRDatabaseReference *conversationOnReceiverRef;
 @property (assign, nonatomic) FIRDatabaseHandle messages_ref_handle;
 @property (assign, nonatomic) FIRDatabaseHandle updated_messages_ref_handle;
+@property (assign, nonatomic) FIRDatabaseHandle deleted_messages_ref_handle;
 @property (strong, nonatomic) FirebaseCustomAuthHelper *authHelper;
 @property (strong, nonatomic) NSString *channel_type;
 @property (strong, nonatomic) ChatImageDownloadManager *imageDownloader;
@@ -46,6 +46,7 @@
 // observer
 @property (strong, nonatomic) NSMutableDictionary *eventObservers;
 @property (assign, atomic) volatile int64_t lastEventHandle;
+@property (assign, atomic) volatile int32_t lastEventHandle32;
 -(NSUInteger)observeEvent:(ChatMessageEventType)eventType withCallback:(void (^)(ChatMessage *message))callback;
 -(void)removeObserverWithHandle:(NSUInteger)event_handle;
 -(void)removeAllObservers;
@@ -63,13 +64,11 @@
 -(void)appendImagePlaceholderMessageWithImage:(UIImage *)image attributes:(NSDictionary *)attributes completion:(void(^)(ChatMessage *message, NSError *error)) callback;
 -(void)sendImagePlaceholderMessage:(ChatMessage *)message completion:(void (^)(ChatMessage *, NSError *))callback;
 -(void)sendMessageType:(NSString *)type subtype:(NSString *)subtype text:(NSString *)text imageURL:(NSString *)imageURL metadata:(ChatMessageMetadata *)metadata attributes:(NSDictionary *)attributes completion:(void(^)(ChatMessage *message, NSError *error)) callback;
--(void)restoreMessagesFromDBWithCompletion:(void(^)(void))callback;
+-(void)restoreMessagesFromDB;
 -(NSString *)mediaFolderPath;
 +(NSString *)mediaFolderPathOfRecipient:(NSString *)recipiendId;
 -(void)saveImageToRecipientMediaFolderAsPNG:(UIImage *)image imageFileName:(NSString *)imageFileName;
--(void)uploadImage:(UIImage *)image fileName:(NSString *)fileName completion:(void(^)(NSURL *downloadURL, NSError *error)) callback progressCallback:(void(^)(double fraction))progressCallback;
-//-(void)updateMessageStatus:(int)status forMessage:(ChatMessage *)message;
--(void)updateMessageStatusSynchronized:(NSString *)messageId withStatus:(int)status completion:(void(^)(void))callback;
--(void)resendMessageWithId:(NSString *)messageId completion:(void(^)(ChatMessage *message, NSError *error)) callback;
+-(void)updateMessageStatus:(int)status forMessage:(ChatMessage *)message;
+//+(NSMutableDictionary *)firebaseMessageFor:(ChatMessage *)message;
 
 @end

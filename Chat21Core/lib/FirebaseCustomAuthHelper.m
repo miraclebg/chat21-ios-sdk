@@ -6,16 +6,14 @@
 //
 
 #import "FirebaseCustomAuthHelper.h"
-#import "FirebaseDatabase/FIRDatabaseQuery.h"
-
-@class FIRDatabaseReference;
+#import <Firebase/Firebase.h>
 
 @implementation FirebaseCustomAuthHelper
 
 - (id) initWithFirebaseRef:(FIRDatabaseReference *)ref token:(NSString *)token {
     self = [super init];
     if (self) {
-        NSLog(@" ref: %@ token: %@", ref, token);
+        //NSLog(@" ref: %@ token: %@", ref, token);
         self.ref = ref;
         self.token = token;
     }
@@ -23,16 +21,16 @@
 }
 
 - (void) authenticate:(void (^)(NSError *, FAuthData *authData))callback {
-    NSLog(@"authenticate: WARNING! NOT IMPLEMENTED!");
+    //NSLog(@"authenticate: WARNING! NOT IMPLEMENTED!");
 //    [self.ref authWithCustomToken:self.token withCompletionBlock:^(NSError *error, FAuthData *authData) {
-////        NSLog(@"End Login:\nError:%@\nauth:%@\nuid:%@\nprovider:%@\ntoken:%@\nproviderData:%@", error, authData.auth, authData.uid, authData.provider, authData.token, authData.providerData);
-//        NSLog(@"email: %@", [authData.auth objectForKey:@"email"]);
-//        NSLog(@"uid: %@", [authData.auth objectForKey:@"uid"]);
-//        NSLog(@"username: %@", [authData.auth objectForKey:@"username"]);
+////        //NSLog(@"End Login:\nError:%@\nauth:%@\nuid:%@\nprovider:%@\ntoken:%@\nproviderData:%@", error, authData.auth, authData.uid, authData.provider, authData.token, authData.providerData);
+//        //NSLog(@"email: %@", [authData.auth objectForKey:@"email"]);
+//        //NSLog(@"uid: %@", [authData.auth objectForKey:@"uid"]);
+//        //NSLog(@"username: %@", [authData.auth objectForKey:@"username"]);
 //        if (error) {
-//            NSLog(@"Login Failed! %@", error);
+//            //NSLog(@"Login Failed! %@", error);
 //        } else {
-//            NSLog(@"Login succeeded! %@", authData);
+//            //NSLog(@"Login succeeded! %@", authData);
 //            callback(error, authData);
 //        }
 //    }];

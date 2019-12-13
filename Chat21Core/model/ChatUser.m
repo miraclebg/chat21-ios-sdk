@@ -13,7 +13,7 @@
 
 -(id)init {
     if (self = [super init])  {
-//        self.imageurl = @"";
+        self.imageurl = @"";
         self.lastname = @"";
         self.firstname = @"";
         self.userId = nil;
@@ -23,9 +23,9 @@
 
 -(id)init:(NSString *)userid fullname:(NSString *)fullname {
     if (self = [super init])  {
-//        self.imageurl = @"";
+        self.imageurl = @"";
         self.lastname = @"";
-        self.firstname = @"";
+        self.firstname = fullname;
         _fullname = fullname;
         self.userId = userid;
     }
@@ -34,7 +34,7 @@
 
 - (id)init:(NSString *)userid fullname:(NSString *)fullname imageUrl:(NSString*)imageUrl {
     if (self = [super init])  {
-        self.profileImageURL = imageUrl;
+        self.imageurl = imageUrl;
         self.profileThumbImageURL = imageUrl;
         self.lastname = @"";
         self.firstname = fullname;
@@ -42,6 +42,14 @@
         self.userId = userid;
     }
     return self;
+}
+
+- (void)copyDataTo:(ChatUser*)chatUser {
+    chatUser.firstname = self.firstname;
+    chatUser.lastname = self.lastname;
+    chatUser.imageurl = self.imageurl;
+    chatUser.profileThumbImageURL = self.profileThumbImageURL;
+    chatUser.profileImageURL = self.profileImageURL;
 }
 
 // Fullname custom getter
@@ -55,13 +63,6 @@
     else {
         return _fullname;
     }
-}
-
-- (void)copyDataTo:(ChatUser*)chatUser {
-    chatUser.firstname = self.firstname;
-    chatUser.lastname = self.lastname;
-    chatUser.profileThumbImageURL = self.profileThumbImageURL;
-    chatUser.profileImageURL = self.profileImageURL;
 }
 
 -(NSDictionary *)asDictionary {
@@ -78,9 +79,9 @@
     if (self.email) {
         [dict setObject:self.email forKey:FIREBASE_USER_EMAIL];
     }
-//    if (self.imageurl) {
-//        [dict setObject:self.imageurl forKey:FIREBASE_USER_IMAGEURL];
-//    }
+    if (self.imageurl) {
+        [dict setObject:self.imageurl forKey:FIREBASE_USER_IMAGEURL];
+    }
     
     return dict;
 }
@@ -113,6 +114,7 @@
     return YES;
 }
 
+/*
 -(NSString *)profileImagePath {
     return [ChatManager profileImagePathOf:self.userId];
 }
@@ -123,6 +125,6 @@
 
 -(NSString *)profileThumbImageURL {
     return [ChatManager profileThumbImageURLOf:self.userId];
-}
+}*/
 
 @end

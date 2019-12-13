@@ -11,23 +11,20 @@
 #import "ChatUser.h"
 #import "ChatUtil.h"
 #import "ChatMessage.h"
-#import "ChatLocal.h"
+#import "Common.h"
 #import "ChatManager.h"
+#import <Firebase/Firebase.h>
 
 @implementation ChatConversation
 
 -(NSString *)dateFormattedForListView {
     NSString *date = [ChatUtil timeFromNowToStringFormattedForConversation:self.date];
-//    NSDateFormatter *timeFormat = [[NSDateFormatter alloc] init];
-//    [timeFormat setDateFormat:@"HH:mm"];
-//    NSString *date = [timeFormat stringFromDate:self.date];
     return date;
 }
 
 -(NSString *)textForLastMessage:(NSString *)me {
-//    NSLog(@"SENDER: %@ ME: %@", self.sender, me);
     if ([self.sender isEqualToString:me]) {
-        NSString *you = [ChatLocal translate:@"You"];
+        NSString *you = [LI18n localizedString:@"You"];
         return [[NSString alloc] initWithFormat:@"%@: %@", you, self.last_message_text];
     } else {
         return self.last_message_text;
@@ -44,7 +41,7 @@
     }
     FIRDatabaseReference *rootRef = [[FIRDatabase database] reference];
     FIRDatabaseReference *ref = [[rootRef child: conversations_path] child:self.conversationId];
-    [ChatManager logDebug:@"Conversation ref: %@", ref];
+    //NSLog(@"Conversation ref: %@", ref);
     return ref;
 }
 
@@ -102,10 +99,11 @@
 }
 
 -(BOOL)isDirect {
-//    NSLog(@"conv: %@, self.channel_type: %@",self.last_message_text, self.channel_type);
+//    //NSLog(@"conv: %@, self.channel_type: %@",self.last_message_text, self.channel_type);
     return ([self.channel_type isEqualToString:MSG_CHANNEL_TYPE_DIRECT] || self.channel_type == nil) ? YES : NO;
 }
 
+/*
 -(NSString *)thumbImageURL {
     if (!self.isDirect) {
         NSString *groupId = self.recipient;
@@ -113,23 +111,11 @@
     } else {
         return [ChatManager profileThumbImageURLOf:self.conversWith];
     }
-}
+}*/
+
 //- (BOOL)isEqual:(id)object {
 //    ChatConversation *conv = (ChatConversation *)object;
 //    return [self.conversationId isEqual:conv.conversationId] ? true : false;
 //}
-
--(NSString *)snapshotAsJSONString {
-    NSString * json = nil;
-    if (self.snapshot && [self.snapshot isKindOfClass:[NSDictionary class]]) {
-        NSError * err;
-        NSData * jsonData = [NSJSONSerialization dataWithJSONObject:self.snapshot options:0 error:&err];
-        if (err) {
-            NSLog(@"Error: %@", err);
-        }
-        json = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    }
-    return json;
-}
 
 @end

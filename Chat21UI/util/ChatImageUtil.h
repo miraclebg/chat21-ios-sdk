@@ -9,8 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@class ChatDiskImageCache;
-
 @interface ChatImageUtil : NSObject
 
 +(UIImage *)adjustEXIF:(UIImage *)image;

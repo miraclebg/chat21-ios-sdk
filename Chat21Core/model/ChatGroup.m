@@ -11,7 +11,7 @@
 #import "ChatUser.h"
 #import "ChatContactsDB.h"
 #import "ChatManager.h"
-#import "FirebaseDatabase/FirebaseDatabase.h"
+#import <Firebase/Firebase.h>
 
 @implementation ChatGroup
 
@@ -35,7 +35,7 @@
     FIRDatabaseReference *rootRef = [[FIRDatabase database] reference];
     NSString *groups_path = [ChatUtil groupsPath];
     FIRDatabaseReference *group_ref = [[rootRef child:groups_path] child:self.groupId];
-    NSLog(@"group_ref %@", group_ref);
+    //NSLog(@"group_ref %@", group_ref);
     return group_ref;
 }
 
@@ -167,11 +167,11 @@
 
 //-(BOOL)completeData {
 //    BOOL complete = (self.members != nil);
-//    NSLog(@"complete: %d", complete);
+//    //NSLog(@"complete: %d", complete);
 //    return complete;
 //}
 
--(void)completeGroupMembersMetadataWithCompletionBlock:(void(^)(void))callback {
+-(void)completeGroupMembersMetadataWithCompletionBlock:(void(^)())callback {
     ChatContactsDB *db = [ChatContactsDB getSharedInstance];
     NSArray<NSString *> *contact_ids = [self.members allKeys];
     [db getMultipleContactsByIdsSyncronized:contact_ids completion:^(NSArray<ChatUser *> *contacts) {
