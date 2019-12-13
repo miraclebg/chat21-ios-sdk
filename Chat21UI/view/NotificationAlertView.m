@@ -7,8 +7,9 @@
 //
 
 #import "NotificationAlertView.h"
+#import "ChatConversationsVC.h"
 #import "ChatManager.h"
-#import "defines.h"
+#import "ChatUIManager.h"
 
 @interface NotificationAlertView () {
     SystemSoundID soundID;
@@ -26,7 +27,7 @@
 */
 
 - (void)initViewWithHeight:(float)height {
-    //NSLog(@"NotificationAlertVC loaded.");
+    NSLog(@"NotificationAlertView loaded.");
     UITapGestureRecognizer *singleFingerTap =
     [[UITapGestureRecognizer alloc] initWithTarget:self
                                             action:@selector(handleSingleTap:)];
@@ -36,18 +37,13 @@
     UIWindow *window = [[UIApplication sharedApplication] keyWindow];
     float alert_width = window.frame.size.width;
     UIWindow *notificationAlertWindow = [[UIWindow alloc] initWithFrame:CGRectMake(0, -alert_height, alert_width, alert_height)];
-    
-    /*CGFloat y = 0;
-    
-    if (IS_IPHONE_X) {
-        y = 20.0f;
-    }*/
-    
     self.frame = CGRectMake(0, 0, alert_width, alert_height);
     self.myWindow = notificationAlertWindow;
     [notificationAlertWindow addSubview:self];
     notificationAlertWindow.windowLevel = UIWindowLevelStatusBar + 1;
-    
+    // setup circle image view
+    self.userImage.layer.cornerRadius = self.userImage.frame.size.width / 2;
+    self.userImage.clipsToBounds = YES;
 //    self.mainWindow = [[[UIApplication sharedApplication] delegate] window];
     // adjusting close button position on the right side of the view
 //    self.closeButton.translatesAutoresizingMaskIntoConstraints = YES;
@@ -62,14 +58,9 @@
 //The event handling method
 - (void)handleSingleTap:(UITapGestureRecognizer *)recognizer {
     //    CGPoint location = [recognizer locationInView:[recognizer.view superview]];
-    //NSLog(@"View tapped!! Moving to conversation tab.");
+    NSLog(@"View tapped!! Moving to conversation tab.");
     [self animateClose];
-    
-    if (self.delegate && [self.delegate respondsToSelector:@selector(didTapView:)]) {
-        [self.delegate didTapView:self];
-    }
-    
-    //int chat_tab_index = [ChatUIManager getInstance].tabBarIndex; // tabIndexByName:@"ChatController"];
+//    int chat_tab_index = [ChatUIManager getInstance].tabBarIndex; // tabIndexByName:@"ChatController"];
     // move to the converstations tab
 //    if (chat_tab_index >= 0) {
 //        UIWindow *window = [[[UIApplication sharedApplication] delegate] window];
@@ -78,9 +69,9 @@
 //        ChatRootNC *nc = [controllers objectAtIndex:chat_tab_index];
 //        ChatConversationsVC *vc = nc.viewControllers[0];
 //        if (vc.presentedViewController) {
-//            //NSLog(@"THERE IS A MODAL PRESENTED! NOT SWITCHING TO ANY CONVERSATION VIEW.");
+//            NSLog(@"THERE IS A MODAL PRESENTED! NOT SWITCHING TO ANY CONVERSATION VIEW.");
 //        } else {
-//            //NSLog(@"SWITCHING TO CONVERSATION VIEW. DISABLED.");
+//            NSLog(@"SWITCHING TO CONVERSATION VIEW. DISABLED.");
 //            // IF YOU ENABLE THIS IS MANDATORY TO FIND A WAY TO DISMISS OR HANDLE THE CURRENT MODAL VIEW
 //            //            [nc popToRootViewControllerAnimated:NO];
 //            //            [vc openConversationWithRecipient:self.sender];
@@ -98,13 +89,13 @@ static float showTime = 4.0;
 //    [window setWindowLevel:UIWindowLevelStatusBar+1];
     
     //    CGRect rect = self.closeButton.frame;
-    //    //NSLog(@"....close x:%f y:%f w:%f h:%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+    //    NSLog(@"....close x:%f y:%f w:%f h:%f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
     //    CGRect rectimg = self.userImage.frame;
-    //    //NSLog(@"....image x:%f y:%f w:%f h:%f", rectimg.origin.x, rectimg.origin.y, rectimg.size.width, rectimg.size.height);
+    //    NSLog(@"....image x:%f y:%f w:%f h:%f", rectimg.origin.x, rectimg.origin.y, rectimg.size.width, rectimg.size.height);
     //    float view_width = self.view.frame.size.width;
     //    float close_button_width = self.closeButton.frame.size.width;
-    //    //NSLog(@"....view_width: %f", view_width);
-    //    //NSLog(@"....close_button_width: %f", close_button_width);
+    //    NSLog(@"....view_width: %f", view_width);
+    //    NSLog(@"....close_button_width: %f", close_button_width);
     
     
     
@@ -149,7 +140,7 @@ static float showTime = 4.0;
 }
 
 - (IBAction)closeAction:(id)sender {
-    //NSLog(@"Closing alert");
+    NSLog(@"Closing alert");
     [self animateClose];
 }
 
@@ -161,7 +152,7 @@ static float showTime = 4.0;
     // help: http://developer.boxcar.io/blog/2014-10-08-notification_sounds/
     //    NSURL *fileURL = [NSURL URLWithString:@"/System/Library/Audio/UISounds/Modern/sms_alert_bamboo.caf"];
     // Construct URL to sound file
-    NSString *path = [NSString stringWithFormat:@"%@/chat.caf", [[NSBundle mainBundle] resourcePath]];
+    NSString *path = [NSString stringWithFormat:@"%@/newnotif.caf", [[NSBundle mainBundle] resourcePath]];
     NSURL *fileURL = [NSURL fileURLWithPath:path];
     
     //    NSURL *fileURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource: ofType:];

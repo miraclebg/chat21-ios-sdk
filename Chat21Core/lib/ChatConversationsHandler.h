@@ -6,12 +6,12 @@
 //
 
 #import <Foundation/Foundation.h>
-//#import "SHPConversationsViewDelegate.h"
 #import "ChatEventType.h"
-#import <Firebase/Firebase.h>
+#import "FirebaseDatabase/FIRDatabaseQuery.h"
 
 @class ChatUser;
 @class ChatConversation;
+@class FIRDatabaseReference;
 
 @interface ChatConversationsHandler : NSObject
 
@@ -28,7 +28,6 @@
 @property (assign, nonatomic) FIRDatabaseHandle conversations_ref_handle_removed;
 @property (assign, nonatomic) FIRDatabaseHandle archived_conversations_ref_handle_added;
 @property (assign, nonatomic) FIRDatabaseHandle archived_conversations_ref_handle_removed;
-//@property (assign, nonatomic) id <SHPConversationsViewDelegate> delegateView;
 @property (strong, nonatomic) NSString *currentOpenConversationId;
 @property (nonatomic, strong) FIRDatabaseReference *rootRef;
 @property (strong, nonatomic) NSString *tenant;
@@ -36,8 +35,6 @@
 // observer
 @property (strong, nonatomic) NSMutableDictionary *eventObservers; // ( event_enum : DictionaryOfCallbacks (event_handle : event_callback) )
 @property (assign, atomic) volatile int64_t lastEventHandler;
-@property (assign, atomic) volatile int32_t lastEventHandler32;
-
 -(NSUInteger)observeEvent:(ChatConversationEventType)eventType withCallback:(void (^)(ChatConversation *conversation))callback;
 -(void)removeObserverWithHandle:(NSUInteger)event_handler;
 -(void)removeAllObservers;
@@ -46,7 +43,8 @@
 -(void)connect;
 -(void)dispose;
 -(void)restoreConversationsFromDB;
--(void)updateLocalConversation:(ChatConversation *)conversation;
--(int)removeLocalConversation:(ChatConversation *)conversation;
+-(void)updateLocalConversation:(ChatConversation *)conversation completion:(void(^)(void)) callback;
+//-(void)removeLocalConversation:(ChatConversation *)conversation;
+-(void)removeLocalConversation:(ChatConversation *)conversation completion:(void(^)(void)) callback;
 
 @end

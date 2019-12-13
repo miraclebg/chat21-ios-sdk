@@ -8,20 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class ChatStatusTitle;
-
-@protocol ChatStatusTitleDelegate <NSObject>
-
-@optional
-
-- (void)didTapChatBackButton:(ChatStatusTitle*)view;
-
-@end
-
 @interface ChatStatusTitle : UIView
-
-@property (nonatomic, assign) BOOL showsBackButton;
-@property (nonatomic, weak) id<ChatStatusTitleDelegate> delegate;
 
 @property (weak, nonatomic) IBOutlet UIButton *usernameButton;
 @property (weak, nonatomic) IBOutlet UILabel *statusLabel;

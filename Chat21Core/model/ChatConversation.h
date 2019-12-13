@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <Firebase/Firebase.h>
 
 static int const CONV_STATUS_FAILED = -1000;
 static int const CONV_STATUS_JUST_CREATED = -900; // for group management
@@ -29,6 +28,8 @@ static NSString* const CONV_STATUS_KEY = @"status";
 static NSString* const CONV_ATTRIBUTES_KEY = @"attributes";
 
 @class ChatUser;
+@class FIRDatabaseReference;
+@class FIRDataSnapshot;
 
 //@class Firebase;
 //@class FDataSnapshot;
@@ -54,14 +55,18 @@ static NSString* const CONV_ATTRIBUTES_KEY = @"attributes";
 @property (nonatomic, assign) int status;
 @property (nonatomic, assign) int indexInMemory;
 @property (nonatomic, strong) NSDictionary *attributes; // firebase
+@property (nonatomic, strong, nonnull) NSString *mtype; // firebase
+
+@property (nonatomic, strong) NSDictionary * _Nullable snapshot;
+@property (nonatomic, strong) NSString * _Nullable snapshotAsJSONString;
 
 @property (nonatomic, assign) BOOL isDirect;
 
--(NSString *)dateFormattedForListView;
+-(NSString *_Nullable)dateFormattedForListView;
 
--(NSString *)textForLastMessage:(NSString *)me;
+-(NSString *_Nullable)textForLastMessage:(NSString *_Nullable)me;
 
-+(ChatConversation *)conversationFromSnapshotFactory:(FIRDataSnapshot *)snapshot me:(ChatUser *)me;
++(ChatConversation *_Nullable)conversationFromSnapshotFactory:(FIRDataSnapshot *_Nonnull)snapshot me:(ChatUser *_Nonnull)me;
 
 
 @end

@@ -8,23 +8,10 @@
 
 #import <UIKit/UIKit.h>
 #import <AudioToolbox/AudioToolbox.h>
-#import "ChatConversation.h"
-
-@class NotificationAlertView;
-
-@protocol NotificationAlertViewDelegate <NSObject>
-
-@optional
-
-- (void)didTapView:(NotificationAlertView*)view;
-
-@end
 
 @interface NotificationAlertView : UIView
 
 -(void)initViewWithHeight:(float)height;
-
-@property (nonatomic, strong) ChatConversation *conversation;
 
 @property (weak, nonatomic) IBOutlet UIImageView *userImage;
 @property (weak, nonatomic) IBOutlet UILabel *senderLabel;
@@ -39,8 +26,6 @@
 @property (strong, nonatomic) UIWindow *myWindow;
 
 @property (strong, nonatomic) NSString *sender;
-
-@property (nonatomic, weak) id<NotificationAlertViewDelegate> delegate;
 
 -(void)animateShow;
 -(void)animateClose;

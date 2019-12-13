@@ -7,18 +7,20 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <Firebase/Firebase.h>
 #import <UIKit/UIKit.h>
+#import "FirebaseDatabase/FIRDataSnapshot.h"
+#import "FirebaseDatabase/FIRDatabaseReference.h"
 
+@class FDataSnapshot;
 @class ChatMessageMetadata;
 
 static int const MSG_STATUS_FAILED = -100;
 static int const MSG_STATUS_SENDING = 0;
 static int const MSG_STATUS_UPLOADING = 5;
 static int const MSG_STATUS_QUEUED = 50;
-static int const MSG_STATUS_SENT = 100;
-static int const MSG_STATUS_RECEIVED = 200; // comunico al server che ho ricevuto il messaggio
-static int const MSG_STATUS_RETURN_RECEIPT = 250; // la doppia spunta
+static int const MSG_STATUS_SENT = 100; // single checkmark
+static int const MSG_STATUS_RECEIVED = 200; // communicates to backend that message was received
+static int const MSG_STATUS_RETURN_RECEIPT = 250; // double checkmark
 static int const MSG_STATUS_SEEN = 300;
 
 // firebase fields
@@ -47,7 +49,6 @@ static NSString* const MSG_TYPE_TEXT = @"text";
 static NSString* const MSG_TYPE_INFO = @"info";
 static NSString* const MSG_TYPE_DROPBOX = @"dropbox";
 static NSString* const MSG_TYPE_ALFRESCO = @"text"; // era: alfresco
-static NSString* const MSG_TYPE_AUDIO = @"audio";
 static NSString* const MSG_DROPBOX_NAME = @"dropbox_name";
 static NSString* const MSG_DROPBOX_LINK = @"dropbox_link";
 static NSString* const MSG_DROPBOX_SIZE = @"dropbox_size";
@@ -57,32 +58,30 @@ static NSString* const MSG_METADATA_ATTACHMENT_SRC = @"src";
 static NSString* const MSG_METADATA_IMAGE_WIDTH = @"width";
 static NSString* const MSG_METADATA_IMAGE_HEIGHT = @"height";
 
-//@class Firebase;
-@class FDataSnapshot;
-
 @interface ChatMessage : NSObject// <JSQMessageData>
 
 @property (nonatomic, strong) FIRDatabaseReference *ref;
 
 //@property (nonatomic, strong) NSString *key; // firebase-key
 @property (nonatomic, strong) NSString *messageId; // firebase-key
-@property (nonatomic, strong) NSString *text; // firebase
-@property (nonatomic, strong) NSString *sender; // firebase
-@property (nonatomic, strong) NSString *senderFullname; // firebase
-@property (nonatomic, strong) NSString *recipient; // firebase
-@property (nonatomic, strong) NSString *recipientFullName; // firebase
-@property (nonatomic, strong) NSString *channel_type; // firebase
-@property (nonatomic, strong) NSString *lang; // firebase
-@property (nonatomic, strong) NSDate *date; // firebase (converted to timestamp)
+@property (nonatomic, strong, nonnull) NSString *text; // firebase
+@property (nonatomic, strong, nonnull) NSString *sender; // firebase
+@property (nonatomic, strong) NSString * _Nullable senderFullname; // firebase
+@property (nonatomic, strong, nonnull) NSString *recipient; // firebase
+@property (nonatomic, strong) NSString * _Nullable recipientFullName; // firebase
+@property (nonatomic, strong, nonnull) NSString *channel_type; // firebase
+@property (nonatomic, strong) NSString * _Nullable lang; // firebase
+@property (nonatomic, strong, nonnull) NSDate *date; // firebase (converted to timestamp)
 @property (nonatomic, assign) int status; // firebase
-@property (nonatomic, strong) NSString *mtype; // firebase
-@property (nonatomic, strong) NSString *subtype; // firebase
-@property (strong, nonatomic) NSString *imageURL; // firebase
-@property (strong, nonatomic) NSString *imageFilename; // firebase - used to save image locally
-@property (nonatomic, strong) ChatMessageMetadata *metadata; // firebase
-@property (nonatomic, strong) NSMutableDictionary *attributes; // firebase
+@property (nonatomic, strong, nonnull) NSString *mtype; // firebase
+@property (nonatomic, strong) NSString * _Nullable subtype; // firebase
+@property (strong, nonatomic) NSString * _Nullable imageURL; // firebase
+@property (strong, nonatomic) NSString * _Nullable imageFilename; // firebase - used to save image locally
+@property (nonatomic, strong) ChatMessageMetadata * _Nullable metadata;
+@property (nonatomic, strong) NSMutableDictionary * _Nullable attributes;
+@property (nonatomic, strong) NSMutableDictionary * _Nullable additionalRootProperties;
 
-@property (nonatomic, strong) NSString *conversationId; // decoded, = recipientId
+@property (nonatomic, strong) NSString * _Nullable conversationId; // decoded, = recipientId
 @property (nonatomic, assign) BOOL archived;
 @property (nonatomic, assign) BOOL media; // decode by mtype (if type == IMAGE, media = YES)
 @property (nonatomic, assign) BOOL document; // decode by mtype (if type == DOCUMENT, document = YES)
@@ -91,29 +90,31 @@ static NSString* const MSG_METADATA_IMAGE_HEIGHT = @"height";
 @property (nonatomic, assign) BOOL typeText; // decoded by mtype
 @property (nonatomic, assign) BOOL typeImage; // decoded by mtype
 
-@property (nonatomic, strong) NSDictionary *snapshot;
-@property (nonatomic, strong) NSString *snapshotAsJSONString;
+@property (nonatomic, strong) NSDictionary * _Nullable snapshot;
+@property (nonatomic, strong) NSString * _Nullable snapshotAsJSONString;
 
 //@property (nonatomic, strong) NSString *attributesAsJSONString;
 
-@property (strong, nonatomic) UIImage *image; // only for rendering
+@property (strong, nonatomic) UIImage * _Nullable image; // only for rendering
 
 
--(UIImage *)imageFromMediaFolder;
--(NSString *)dateFormattedForListView;
+-(UIImage *_Nullable)imageFromMediaFolder;
+-(NSString *_Nullable)dateFormattedForListView;
 -(void)updateStatusOnFirebase:(int)status;
 -(BOOL)imageExistsInMediaFolder;
--(NSString *)imagePathFromMediaFolder;
--(UIImage *)imagePlaceholder;
--(NSString *)mediaFolderPath;
--(NSError *)createMediaFolderPathIfNotExists;
-+(ChatMessage *)messageFromfirebaseSnapshotFactory:(FIRDataSnapshot *)snapshot;
--(NSMutableDictionary *)asFirebaseMessage;
+-(NSString *_Nullable)imagePathFromMediaFolder;
+-(UIImage *_Nullable)imagePlaceholder;
+-(NSString *_Nullable)mediaFolderPath;
+-(NSError *_Nullable)createMediaFolderPathIfNotExists;
++(ChatMessage *_Nullable)messageFromfirebaseSnapshotFactory:(FIRDataSnapshot *_Nullable)snapshot;
+-(NSMutableDictionary *_Nullable)asFirebaseMessage;
 //+(ChatMessage *)messageFromSnapshotFactoryTEST:(FDataSnapshot *)snapshot;
-+(NSString *)imageTextPlaceholder:(NSString *)imageURL;
--(void)setCorrectText:(ChatMessage *)message text:(NSString *)text;
++(NSString *)imageTextPlaceholder:(NSString *_Nullable)imageURL;
+-(void)setCorrectText:(ChatMessage *)message text:(NSString *_Nullable)text;
 
 -(BOOL)validImageMetadata;
 -(CGSize)imageSize;
+
+-(ChatMessage *_Nonnull)clone;
 
 @end

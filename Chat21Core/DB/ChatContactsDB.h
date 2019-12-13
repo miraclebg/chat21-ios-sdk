@@ -23,7 +23,6 @@
 
 +(ChatContactsDB*)getSharedInstance;
 -(BOOL)createDBWithName:(NSString *)name;
-- (void)closeHandle;
 
 // contacts
 -(void)insertOrUpdateContactSyncronized:(ChatUser *)contact completion:(void(^)(void)) callback;
@@ -31,10 +30,12 @@
 -(void)getMultipleContactsByIdsSyncronized:(NSArray<NSString *> *)contactIds completion:(void(^)(NSArray<ChatUser *> *)) callback;
 -(void)searchContactsByFullnameSynchronized:(NSString *)searchString completion:(void (^)(NSArray<ChatUser *> *))callback;
 -(void)removeContactSynchronized:(NSString *)contactId completion:(void(^)(void)) callback;
--(ChatUser *)getMostRecentContact;
--(BOOL)insertContact:(ChatUser *)contact;
+
+-(void)getMostRecentContactSyncronizedWithCompletion:(void(^)(ChatUser *contact)) callback;
+//-(ChatUser *)getMostRecentContact;
+//-(BOOL)insertContact:(ChatUser *)contact;
 -(NSArray*)getAllContacts; // test only
--(void)drop_database;
+//-(void)drop_database;
 
 @end
 

@@ -14,7 +14,7 @@ static ChatUploadsController *sharedInstance = nil;
 @implementation ChatUploadsController
 
 -(id)init {
-    //NSLog(@"Initializing ChatUploadsController...");
+    NSLog(@"Initializing ChatUploadsController...");
     self = [super init];
     if (self) {
         self.currentUploads = [[NSMutableDictionary alloc] init];
@@ -23,9 +23,9 @@ static ChatUploadsController *sharedInstance = nil;
 }
 
 +(ChatUploadsController *)getSharedInstance {
-    //NSLog(@"Creating ChatUploadsController instance...");
+    NSLog(@"Creating ChatUploadsController instance...");
     if (!sharedInstance) {
-        //NSLog(@"Instance created...");
+        NSLog(@"Instance created...");
         sharedInstance = [[super alloc] init];
     }
     return sharedInstance;
@@ -34,19 +34,19 @@ static ChatUploadsController *sharedInstance = nil;
 -(void)addDataController:(ChatUpload *)dc {
     dc.uploadsController = self;
     [self.currentUploads setObject:dc forKey:dc.uploadId];
-    //NSLog(@"Added controller. Total %lu", (unsigned long)self.currentUploads.count);
+    NSLog(@"Added controller. Total %lu", (unsigned long)self.currentUploads.count);
 }
 
 -(void)didFinishConnection:(ChatUpload *)dc withError:(NSError *)error {
-    //NSLog(@"Connection for %@ finished. Finding and removing...", dc);
-    //NSLog(@"Total controllers: %lu", (unsigned long)self.currentUploads.count);
+    NSLog(@"Connection for %@ finished. Finding and removing...", dc);
+    NSLog(@"Total controllers: %lu", (unsigned long)self.currentUploads.count);
     [self removeDataController:dc];
 }
 
 -(void)removeDataController:(ChatUpload *)dc {
     [dc cancel];
     [self.currentUploads removeObjectForKey:dc.uploadId];
-    //NSLog(@"Controller was removed. Total %lu", (unsigned long)self.currentUploads.count);
+    NSLog(@"Controller was removed. Total %lu", (unsigned long)self.currentUploads.count);
 }
 
 @end

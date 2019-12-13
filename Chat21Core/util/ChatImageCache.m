@@ -73,14 +73,14 @@ static ChatImageCache *sharedInstance = nil;
     // rendere persistente anche il dizionario!
     
     if ([self.imageCache count] == self.maxSize) {
-        //        //NSLog(@"Removing oldest element");
+        //        NSLog(@"Removing oldest element");
         // remove oldest element
         
         NSMutableArray *wrappers = [[NSMutableArray alloc] init];
         for (NSString* key in self.imageCache) {
             ChatImageWrapper *wrapper = [self.imageCache objectForKey:key];
             [wrappers addObject:wrapper];
-            //            //NSLog(@"found: %@", wrapper);
+            //            NSLog(@"found: %@", wrapper);
         }
         // sort by lastDate
         

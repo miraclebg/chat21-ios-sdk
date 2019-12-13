@@ -19,10 +19,9 @@
 
 +(ChatGroupsDB*)getSharedInstance;
 -(BOOL)createDBWithName:(NSString *)name;
-- (void)closeHandle;
 
 // groups
--(void)insertOrUpdateGroupSyncronized:(ChatGroup *)group completion:(void(^)()) callback;
+-(void)insertOrUpdateGroupSyncronized:(ChatGroup *)group completion:(void(^)(void)) callback;
 //-(void)insertGroupOnlyIfNotExistsSyncronized:(ChatGroup *)group completion:(void(^)()) callback; // only used by group-created-by-push-notification
 -(NSMutableArray *)getAllGroupsForUser:(NSString *)user;
 -(void)getGroupByIdSyncronized:(NSString *)groupId completion:(void(^)(ChatGroup *)) callback;
