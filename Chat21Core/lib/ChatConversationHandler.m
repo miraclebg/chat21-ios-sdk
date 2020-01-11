@@ -109,6 +109,7 @@
         return;
     }
     self.messagesRef = [ChatUtil conversationMessagesRef:self.recipientId];
+    self.messagesToDeleteRef = [[[self.messagesRef parent] parent] child:@"messagesToDelete"];
     self.conversationOnSenderRef = [ChatUtil conversationRefForUser:self.senderId conversationId:self.conversationId];
     self.conversationOnReceiverRef = [ChatUtil conversationRefForUser:self.recipientId conversationId:self.conversationId];
     
@@ -120,6 +121,27 @@
     } else {
         lasttime = 0;
     }
+    
+    [self.messagesToDeleteRef observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
+        NSDictionary *vals = snapshot.value;
+        
+        // delete all previously deleted messages from local cache
+        // then wipe all data in this key
+        if ([vals isKindOfClass:[NSDictionary class]]) {
+            NSArray *messageIds = vals.allKeys;
+            
+            for(NSString *messageId in messageIds) {
+                [self removeMessageFromMemory:messageId];
+                [[ChatDB getSharedInstance] removeMessage:messageId];
+                
+                ChatMessage *cm = [ChatMessage new];
+                cm.messageId = messageId;
+                [self notifyEvent:ChatEventMessageDeleted message:cm];
+            }
+        }
+        
+        [self.messagesToDeleteRef removeValue];
+    }];
     
     self.messages_ref_handle = [[[self.messagesRef queryOrderedByChild:@"timestamp"] queryStartingAtValue:@(lasttime)] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot *snapshot) {
         
@@ -212,9 +234,8 @@
         
         ChatMessage *message = [ChatMessage messageFromfirebaseSnapshotFactory:snapshot];
         
-        [self removeMessageFromMemory:message];
+        [self removeMessageFromMemory:message.messageId];
         [[ChatDB getSharedInstance] removeMessage:message.messageId];
-        
         [self notifyEvent:ChatEventMessageDeleted message:message];
         
     } withCancelBlock:^(NSError *error) {
@@ -542,13 +563,13 @@
     }
 }
 
--(void)removeMessageFromMemory:(ChatMessage *)message {
+-(void)removeMessageFromMemory:(NSString*)messageId {
     // find message...
     NSInteger index = NSNotFound;
     NSInteger i = 0;
     
     for (ChatMessage* msg in self.messages) {
-        if([msg.messageId isEqualToString: message.messageId]) {
+        if([msg.messageId isEqualToString:messageId]) {
             index = i;
             break;
         }

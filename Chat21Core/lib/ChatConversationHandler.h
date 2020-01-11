@@ -34,6 +34,7 @@
 @property (strong, nonatomic) NSMutableArray<ChatMessage *> *messages;
 @property (strong, nonatomic) NSString *firebaseToken;
 @property (strong, nonatomic) FIRDatabaseReference *messagesRef;
+@property (strong, nonatomic) FIRDatabaseReference *messagesToDeleteRef;
 @property (strong, nonatomic) FIRDatabaseReference *conversationOnSenderRef;
 @property (strong, nonatomic) FIRDatabaseReference *conversationOnReceiverRef;
 @property (assign, nonatomic) FIRDatabaseHandle messages_ref_handle;

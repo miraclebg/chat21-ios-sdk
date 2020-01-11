@@ -578,11 +578,17 @@ static ChatManager *sharedInstance = nil;
     FIRDatabaseReference *messageRefSender = [[messagesRefSender child:recipientId] child:messageId];
     FIRDatabaseReference *messageRefReceiver = [[messagesRefReceiver child:senderId] child:messageId];
     
+    // we need to insert the ID of the deleted messages in a separate node
+    // so the recipient user can check this and delete all cached messages on his side
+    // which were deleted while he was not online
+    FIRDatabaseReference *messageRefDelInsReceiver = [[[[[messagesRefReceiver child:recipientId] parent] parent] child:@"messagesToDelete"]
+                                                      child:messageId];
+    BOOL shouldInsertDel = [conversationId isEqualToString:recipientId];
+
     FIRDatabaseReference *messagessRefSender = [messagesRefSender child:recipientId];
     FIRDatabaseReference *messagessRefReceiver = [messagesRefReceiver child:senderId];
     
     [[messagessRefSender queryLimitedToLast:1] observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
-        
         // find out if the deleted message is the last message - if so we need to update the last message text under conversations
         BOOL isLastChildSender = [snapshot hasChild:messageId];
         
@@ -614,6 +620,11 @@ static ChatManager *sharedInstance = nil;
                                 [self resetLastMessageInConversation:conversationId];
                             }
                             
+                            // insert the deletion
+                            if (shouldInsertDel) {
+                                [messageRefDelInsReceiver setValue:@"1"];
+                            }
+                            
                             if (callback) {
                                 callback(success, error);
                             }
@@ -626,6 +637,11 @@ static ChatManager *sharedInstance = nil;
                         }
                         
                         [self resetLastMessageInConversation:conversationId];
+                        
+                        // insert the deletion
+                        if (shouldInsertDel) {
+                            [messageRefDelInsReceiver setValue:@"1"];
+                        }
                         
                         if (callback) {
                             callback(success, error);
