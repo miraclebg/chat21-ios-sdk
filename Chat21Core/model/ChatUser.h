@@ -22,6 +22,7 @@ static NSString* const FIREBASE_USER_EMAIL = @"email";
 @property(nonatomic, strong) NSString *fullname;
 @property(nonatomic, strong) NSString *imageurl;
 @property(nonatomic, strong) NSString *email;
+@property(nonatomic, assign) NSInteger imageChangedAt;
 //@property(nonatomic, strong) NSString *password;
 @property(nonatomic, assign) NSInteger createdon;
 @property(nonatomic, strong) NSDate *createdonAsDate;

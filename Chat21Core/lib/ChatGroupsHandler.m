@@ -150,8 +150,10 @@
     group.user = self.me;
     [self insertInMemory:group];
     __block ChatGroup *_group = group;
-    [[ChatGroupsDB getSharedInstance] insertOrUpdateGroupSyncronized:_group completion:^{
-        [self notifySubscribers:_group];
+    [[ChatGroupsDB getSharedInstance] insertOrUpdateGroupSyncronized:_group completion:^(BOOL success){
+        if (success) {
+            [self notifySubscribers:_group];
+        }
         _group = nil;
         callback();
     }];

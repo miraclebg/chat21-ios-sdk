@@ -87,20 +87,25 @@
 
 -(void)restoreMessagesFromDB {
     //NSLog(@"RESTORING ALL MESSAGES FOR CONVERSATION %@", self.conversationId);
-    NSArray *inverted_messages = [[[ChatDB getSharedInstance] getAllMessagesForConversation:self.conversationId start:0 count:40] mutableCopy];
-    //    //NSLog(@"DB MESSAGES NUMBER: %lu", (unsigned long) inverted_messages.count);
-    //NSLog(@"Restoring last 40 messages...");
-    NSEnumerator *enumerator = [inverted_messages reverseObjectEnumerator];
-    for (id element in enumerator) {
-        [self.messages addObject:element];
-    }
     
-    // set as status:"failed" all the messages in status: "sending"
-    for (ChatMessage *m in self.messages) {
-        if (m.status == MSG_STATUS_SENDING || m.status == MSG_STATUS_UPLOADING) {
-            m.status = MSG_STATUS_FAILED;
+    [[ChatDB getSharedInstance] getAllMessagesForConversationSyncronized:self.conversationId start:0 count:40 completion:^(NSArray *messages) {
+        if (messages.count) {
+            NSArray *inverted_messages = messages.mutableCopy;
+            //    //NSLog(@"DB MESSAGES NUMBER: %lu", (unsigned long) inverted_messages.count);
+            //NSLog(@"Restoring last 40 messages...");
+            NSEnumerator *enumerator = [inverted_messages reverseObjectEnumerator];
+            for (id element in enumerator) {
+                [self.messages addObject:element];
+            }
+            
+            // set as status:"failed" all the messages in status: "sending"
+            for (ChatMessage *m in self.messages) {
+                if (m.status == MSG_STATUS_SENDING || m.status == MSG_STATUS_UPLOADING) {
+                    m.status = MSG_STATUS_FAILED;
+                }
+            }
         }
-    }
+    }];
 }
 
 -(void)connect {
@@ -132,7 +137,9 @@
             
             for(NSString *messageId in messageIds) {
                 [self removeMessageFromMemory:messageId];
-                [[ChatDB getSharedInstance] removeMessage:messageId];
+                
+#warning fixme
+              //  [[ChatDB getSharedInstance] removeMessage:messageId];
                 
                 ChatMessage *cm = [ChatMessage new];
                 cm.messageId = messageId;
@@ -200,16 +207,24 @@
             //            if (message.status == MSG_STATUS_SENDING) {
             //                status = MSG_STATUS_SENT;
             //            }
-            ChatMessage *message_archived = [[ChatDB getSharedInstance] getMessageById:message.messageId];
-            if (message_archived) {
-                [self updateMessageStatusInMemory:message.messageId withStatus:message.status];
-                [self updateMessageStatusOnDB:message.messageId withStatus:message.status];
-                [self notifyEvent:ChatEventMessageChanged message:message];
-            }
-            else {
-                [self insertMessageIfNotExists:message];
-                [self notifyEvent:ChatEventMessageAdded message:message];
-            }
+            
+            [[ChatDB getSharedInstance] getMessageByIdSyncronized:message.messageId completion:^(ChatMessage *message_archived) {
+                if (message_archived) {
+                    [self updateMessageStatusInMemory:message.messageId withStatus:message.status];
+                    [self updateMessageStatusOnDB:message.messageId withStatus:message.status];
+                    
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self notifyEvent:ChatEventMessageChanged message:message];
+                    });
+                } else {
+                    [self insertMessageIfNotExists:message];
+                    
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [self notifyEvent:ChatEventMessageAdded message:message];
+                    });
+                }
+            }];
+            
             //            [self updateMessageStatusInMemory:message.messageId withStatus:status];
             //            [self updateMessageStatusOnDB:message.messageId withStatus:status];
             //[self notifyEvent:ChatEventMessageChanged message:message];
@@ -235,7 +250,10 @@
         ChatMessage *message = [ChatMessage messageFromfirebaseSnapshotFactory:snapshot];
         
         [self removeMessageFromMemory:message.messageId];
-        [[ChatDB getSharedInstance] removeMessage:message.messageId];
+        
+#warning fixme
+//        [[ChatDB getSharedInstance] removeMessage:message.messageId];
+        
         [self notifyEvent:ChatEventMessageDeleted message:message];
         
     } withCancelBlock:^(NSError *error) {
@@ -529,11 +547,11 @@
 }
 
 -(void)updateMessageStatusOnDB:(NSString *)messageId withStatus:(int)status {
-    [[ChatDB getSharedInstance] updateMessage:messageId withStatus:status];
+    [[ChatDB getSharedInstance] updateMessageSynchronized:messageId withStatus:status completion:nil];
 }
 
 -(void)insertMessageOnDBIfNotExists:(ChatMessage *)message {
-    [[ChatDB getSharedInstance] insertMessageIfNotExists:message];
+    [[ChatDB getSharedInstance] insertMessageIfNotExistsSyncronized:message completion:nil];
 }
 
 -(void)insertMessageInMemoryIfNotExists:(ChatMessage *)message {

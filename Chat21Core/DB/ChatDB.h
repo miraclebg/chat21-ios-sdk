@@ -15,38 +15,32 @@
 //@class ChatUser;
 
 @interface ChatDB : NSObject
-{
-    NSString *databasePath;
-}
 
+@property (nonatomic, strong) NSString *databasePath;
 @property (assign, nonatomic) BOOL logQuery;
 
 +(ChatDB*)getSharedInstance;
 //-(BOOL)createDB;
 -(BOOL)createDBWithName:(NSString *)name;
-- (void)closeHandle;
 
 // messages
--(BOOL)insertMessageIfNotExists:(ChatMessage *)message;
--(BOOL)insertMessage:(ChatMessage *)message;
--(BOOL)updateMessage:(NSString *)messageId withStatus:(int)status;
--(BOOL)updateMessage:(NSString *)messageId status:(int)status text:(NSString *)text snapshotAsJSONString:(NSString *)snapshotAsJSONString;
--(NSArray*)getAllMessages;
--(NSArray*)getAllMessagesForConversation:(NSString *)conversationId start:(int)start count:(int)count;
--(NSArray*)getAllMessagesForConversation:(NSString *)conversationId;
--(ChatMessage *)getMessageById:(NSString *)messageId;
--(BOOL)removeAllMessagesForConversation:(NSString *)conversationId;
+
+-(void)updateMessageSynchronized:(NSString *)messageId withStatus:(int)status completion:(void(^)(BOOL success)) callback;
+-(BOOL)updateMessage:(NSString *)messageId status:(int)status text:(NSString *)text snapshotAsJSONString:(NSString *)snapshotAsJSONString; // TODO hide. only call synchroninzed
+-(void)removeAllMessagesForConversationSynchronized:(NSString *)conversationId completion:(void(^)(BOOL success)) callback;
+-(void)insertMessageIfNotExistsSyncronized:(ChatMessage *)message completion:(void(^)(BOOL success)) callback;
+-(void)getMessageByIdSyncronized:(NSString *)messageId completion:(void(^)(ChatMessage *)) callback;
+-(void)getAllMessagesForConversationSyncronized:(NSString *)conversationId start:(int)start count:(int)count completion:(void(^)(NSArray *messages)) callback;
+-(void)updateLastMessageInConversation:(NSString*)conversationId completion:(void(^)(BOOL success)) callback;
+-(void)resetLastMessageInConversation:(NSString*)conversationId completion:(void(^)(BOOL success)) callback;
+-(void)removeMessage:(NSString*)conversationId completion:(void(^)(BOOL success)) callback;
 
 // conversations
--(BOOL)insertOrUpdateConversation:(ChatConversation *)conversation;
--(BOOL)insertConversation:(ChatConversation *)conversation;
--(BOOL)updateConversation:(ChatConversation *)conversation;
--(BOOL)resetLastMessageInConversation:(NSString*)conversationId;
--(BOOL)updateLastMessageInConversation:(NSString*)conversationId;
--(NSArray*)getAllConversations;
+
+-(void)insertOrUpdateConversationSyncronized:(ChatConversation *)conversation completion:(void(^)(BOOL success)) callback;
+- (void)removeConversationSynchronized:(NSString *)conversationId completion:(void(^)(BOOL success)) callback;
+- (void)getConversationByIdSynchronized:(NSString *)conversationId completion:(void(^)(ChatConversation *)) callback;
+// NO SYNCH
 - (NSArray*)getAllConversationsForUser:(NSString *)user archived:(BOOL)archived limit:(int)limit;
--(ChatConversation *)getConversationById:(NSString *)conversationId;
--(BOOL)removeConversation:(NSString *)conversationId;
--(BOOL)removeMessage:(NSString*)messageId;
 
 @end

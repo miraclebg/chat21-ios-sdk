@@ -11,18 +11,15 @@
 @class ChatGroup;
 
 @interface ChatGroupsDB : NSObject
-{
-    NSString *databasePath;
-}
 
+@property (nonatomic, strong) NSString *databasePath;
 @property (assign, nonatomic) BOOL logQuery;
 
 +(ChatGroupsDB*)getSharedInstance;
 -(BOOL)createDBWithName:(NSString *)name;
-- (void)closeHandle;
 
 // groups
--(void)insertOrUpdateGroupSyncronized:(ChatGroup *)group completion:(void(^)()) callback;
+-(void)insertOrUpdateGroupSyncronized:(ChatGroup *)group completion:(void(^)(BOOL success)) callback;
 //-(void)insertGroupOnlyIfNotExistsSyncronized:(ChatGroup *)group completion:(void(^)()) callback; // only used by group-created-by-push-notification
 -(NSMutableArray *)getAllGroupsForUser:(NSString *)user;
 -(void)getGroupByIdSyncronized:(NSString *)groupId completion:(void(^)(ChatGroup *)) callback;

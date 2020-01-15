@@ -25,6 +25,11 @@
 @class ChatConnectionStatusHandler;
 @class ChatDiskImageCache;
 
+static int const CHAT_LOG_LEVEL_ERROR = 0;
+static int const CHAT_LOG_LEVEL_WARNING = 1;
+static int const CHAT_LOG_LEVEL_INFO = 2;
+static int const CHAT_LOG_LEVEL_DEBUG = 3;
+
 typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 
 @interface ChatManager : NSObject
@@ -49,6 +54,7 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 //@property (assign, nonatomic) FIRDatabaseHandle connectedRefHandle;
 @property (assign, nonatomic) BOOL groupsMode;
 @property (assign, nonatomic) NSInteger tabBarIndex;
+@property (assign, nonatomic) NSInteger logLevel;
 
 +(void)configureWithAppId:(NSString *)app_id;
 +(void)configure;
@@ -93,7 +99,7 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 //-(void)createOrUpdateConversation:(ChatConversation *)conversation;
 -(void)removeConversationForUser:(FIRDatabaseReference *)conversationRef userId:(NSInteger)otherUserId callback:(ChatManagerCompletedBlock)callback;
 -(void)removeConversation:(ChatConversation *)conversation callback:(ChatManagerCompletedBlock)callback;
--(void)removeConversationFromDB:(NSString *)conversationId;
+-(void)removeConversationFromDB:(NSString *)conversationId callback:(ChatManagerCompletedBlock)callback;
 -(void)updateConversationIsNew:(FIRDatabaseReference *)conversationRef is_new:(int)is_new;
 
 - (void)removeConversationMessage:(BOOL)removeBothMessages
@@ -109,6 +115,12 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 
 -(void)removeInstanceId;
 -(void)loadGroup:(NSString *)group_id completion:(void (^)(ChatGroup* group, BOOL error))callback;
+
+// LOG
++(void)logDebug:(NSString*)text, ...;
++(void)logInfo:(NSString*)text, ...;
++(void)logError:(NSString*)text, ...;
++(void)logWarn:(NSString*)text, ...;
 
 // profile image
 // paths

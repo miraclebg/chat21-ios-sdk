@@ -272,7 +272,7 @@
 }
 
 -(void)insertConversationOnDBIfNotExists:(ChatMessage *)message {
-    [[ChatDB getSharedInstance] insertMessageIfNotExists:message];
+    [[ChatDB getSharedInstance] insertMessageIfNotExistsSyncronized:message completion:nil];
 }
 
 // MEMORY DB - CONVERSATIONS
@@ -358,29 +358,27 @@
 }
 
 -(void)insertOrUpdateConversationOnDB:(ChatConversation *)conversation {
-    __weak NSString *_me = self.me;
-    conversation.user = _me;
-    __weak ChatConversation *_conv = conversation;
-    [[ChatDB getSharedInstance] insertOrUpdateConversation:_conv];
-    conversation = nil;
-    _conv = nil;
+    conversation.user = self.me;
+    [[ChatDB getSharedInstance] insertOrUpdateConversationSyncronized:conversation completion:nil];
 }
 
 -(void)removeConversationOnDB:(ChatConversation *)conversation {
     conversation.user = self.me;
-    [[ChatDB getSharedInstance] removeConversation:conversation.conversationId];
+#warning fixme
+//    [[ChatDB getSharedInstance] removeConversation:conversation.conversationId];
 }
 
 -(void)unarchiveConversation:(ChatConversation *)conversation {
     [self removeArchivedConversationInMemory:conversation];
     //    conversation.user = self.me; // UNUSEFUL, THE USER IS SET BY ChatConversatioN.conversationFromSnapshotFactory
     conversation.archived = NO;
-    [[ChatDB getSharedInstance] insertOrUpdateConversation:conversation];
+    [[ChatDB getSharedInstance] insertOrUpdateConversationSyncronized:conversation completion:nil];
 }
 
 -(void)removeArchivedConversationOnDB:(ChatConversation *)conversation {
     conversation.user = self.me;
-    [[ChatDB getSharedInstance] removeConversation:conversation.conversationId];
+#warning fixme
+//    [[ChatDB getSharedInstance] removeConversation:conversation.conversationId];
 }
 
 //-(void)finishedReceivingConversation:(ChatConversation *)conversation {

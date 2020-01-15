@@ -49,6 +49,13 @@ static ChatManager *sharedInstance = nil;
     sharedInstance.archiveAndCloseSupportConversationURI = @"/supportapi/%@/groups/%@";
     sharedInstance.deleteProfilePhotoURI = @"";
     sharedInstance.groupsMode = YES;
+    
+#if DEBUG || TESTING
+    sharedInstance.logLevel = CHAT_LOG_LEVEL_DEBUG;
+#else
+    sharedInstance.logLevel = CHAT_LOG_LEVEL_INFO;
+#endif
+    
     sharedInstance.tabBarIndex = 0;
     if (dictionary) {
         if ([dictionary objectForKey:@"tenant"]) {
@@ -304,9 +311,58 @@ static ChatManager *sharedInstance = nil;
     }
     self.loggedUser = nil;
     
-    [[ChatContactsDB getSharedInstance] closeHandle];
-    [[ChatDB getSharedInstance] closeHandle];
-    [[ChatGroupsDB getSharedInstance] closeHandle];
+    //    [[ChatContactsDB getSharedInstance] closeHandle];
+    //    [[ChatDB getSharedInstance] closeHandle];
+    //    [[ChatGroupsDB getSharedInstance] closeHandle];
+}
+
++(void)logDebug:(NSString*)text, ... {
+    ChatManager *sharedInstance = [ChatManager getInstance];
+    if (sharedInstance.logLevel >= CHAT_LOG_LEVEL_DEBUG) {
+        va_list args;
+        va_start(args, text);
+        NSString *log_msg = [[NSString alloc] initWithFormat:text arguments:args];
+        NSLog(@"%@", log_msg);
+        va_end(args);
+    }
+}
+
++(void)logInfo:(NSString*)text, ... {
+    ChatManager *sharedInstance = [ChatManager getInstance];
+    if (sharedInstance.logLevel >= CHAT_LOG_LEVEL_INFO) {
+        va_list args;
+        va_start(args, text);
+        NSString *log_msg = [[NSString alloc] initWithFormat:text arguments:args];
+        NSLog(@"%@", log_msg);
+        va_end(args);
+    }
+}
+
++(void)logWarn:(NSString*)text, ... {
+    ChatManager *sharedInstance = [ChatManager getInstance];
+    if (sharedInstance.logLevel >= CHAT_LOG_LEVEL_WARNING) {
+        va_list args;
+        va_start(args, text);
+        NSString *log_msg = [[NSString alloc] initWithFormat:text arguments:args];
+        NSLog(@"%@", log_msg);
+        va_end(args);
+    }
+}
+
++(void)logError:(NSString*)text, ... {
+    ChatManager *sharedInstance = [ChatManager getInstance];
+    if (sharedInstance.logLevel >= CHAT_LOG_LEVEL_ERROR) {
+        //        va_list args;
+        //        va_start(args, status);
+        //        va_end(args);
+        //        NSString * str = [[NSString alloc] initWithFormat:status arguments:args];
+        //        NSLog(@"%@", str);
+        va_list args;
+        va_start(args, text);
+        NSString *log_msg = [[NSString alloc] initWithFormat:text arguments:args];
+        NSLog(@"%@", log_msg);
+        va_end(args);
+    }
 }
 
 // === GROUPS ===
@@ -441,7 +497,7 @@ static ChatManager *sharedInstance = nil;
             NSDate *now = [[NSDate alloc] init];
             groupConversation.date = now;
             groupConversation.status = CONV_STATUS_FAILED;
-            [[ChatDB getSharedInstance] insertOrUpdateConversation:groupConversation];
+            [[ChatDB getSharedInstance] insertOrUpdateConversationSyncronized:groupConversation completion:nil];
             //NSLog(@">>>>> -Group Failed- Conversation insertOrUpdate operation is %d", result);
             [self.conversationsHandler restoreConversationsFromDB];
             callback(group, error);
@@ -513,13 +569,12 @@ static ChatManager *sharedInstance = nil;
         BOOL success = !error;
         
         if (success) {
-            [self removeConversationFromDB:conversationId];
+            [self removeConversationFromDB:conversationId callback:^(BOOL success, NSError *error) {
+                if (callback) {
+                    callback(success, error);
+                }
+            }];
         }
-        
-        if (callback) {
-            callback(success, error);
-        }
-        //NSLog(@"Conversation %@ removed from firebase with error: %@", firebaseRef, error);
     }];
 }
 
@@ -533,35 +588,78 @@ static ChatManager *sharedInstance = nil;
         BOOL success = !error;
         
         if (success) {
-            [self removeConversationFromDB:conversationId];
+            [self removeConversationFromDB:conversationId callback:^(BOOL success, NSError *error) {
+                if (callback) {
+                    callback(success, error);
+                }
+            }];
         }
-        
-        if (callback) {
-            callback(success, error);
-        }
-        //NSLog(@"Conversation %@ removed from firebase with error: %@", firebaseRef, error);
     }];
 }
 
--(void)removeConversationFromDB:(NSString *)conversationId {
+-(void)removeConversationFromDB:(NSString *)conversationId callback:(ChatManagerCompletedBlock)callback {
     ChatDB *db = [ChatDB getSharedInstance];
-    [db removeConversation:conversationId];
-    [db removeAllMessagesForConversation:conversationId];
+
+    dispatch_group_t g = dispatch_group_create();
+    dispatch_queue_t cq = dispatch_queue_create("com.gymnadz.removeConversationQueue",
+                                                DISPATCH_QUEUE_SERIAL);
+    
+    dispatch_group_enter(g);
+    
+    __block BOOL success1 = NO;
+    __block BOOL success2 = NO;
+    
+    dispatch_async(cq, ^{
+        [db removeAllMessagesForConversationSynchronized:conversationId completion:^(BOOL success) {
+            success1 = success;
+            dispatch_group_leave(g);
+        }];
+    });
+    
+    dispatch_async(cq, ^{
+        [db removeConversationSynchronized:conversationId completion:^(BOOL success) {
+            success2 = success;
+            dispatch_group_leave(g);
+        }];
+    });
+    
+    dispatch_group_notify(g, dispatch_get_main_queue(), ^{
+        BOOL success = success1 && success2;
+        
+        if (callback) {
+            callback(success, nil);
+        }
+    });
 }
 
-- (void)updateConversationLastMessageDb:(NSString*)conversationId {
+- (void)updateConversationLastMessageDb:(NSString*)conversationId callback:(ChatManagerCompletedBlock)callback {
     ChatDB *db = [ChatDB getSharedInstance];
-    [db updateLastMessageInConversation:conversationId];
+
+    [db updateLastMessageInConversation:conversationId completion:^(BOOL success) {
+        if (callback) {
+            callback(success, nil);
+        }
+    }];
 }
 
-- (void)resetLastMessageInConversation:(NSString*)conversationId {
+- (void)resetLastMessageInConversation:(NSString*)conversationId callback:(ChatManagerCompletedBlock)callback {
     ChatDB *db = [ChatDB getSharedInstance];
-    [db resetLastMessageInConversation:conversationId];
+
+    [db resetLastMessageInConversation:conversationId completion:^(BOOL success) {
+        if (callback) {
+            callback(success, nil);
+        }
+    }];
 }
 
-- (void)removeMessageFromDb:(NSString*)messageId {
+- (void)removeMessageFromDb:(NSString*)messageId callback:(ChatManagerCompletedBlock)callback {
     ChatDB *db = [ChatDB getSharedInstance];
-    [db removeMessage:messageId];
+
+    [db removeMessage:messageId completion:^(BOOL success) {
+        if (callback) {
+            callback(success, nil);
+        }
+    }];
 }
 
 - (void)removeConversationMessage:(BOOL)removeBothMessages
@@ -584,7 +682,7 @@ static ChatManager *sharedInstance = nil;
     FIRDatabaseReference *messageRefDelInsReceiver = [[[[[messagesRefReceiver child:recipientId] parent] parent] child:@"messagesToDelete"]
                                                       child:messageId];
     BOOL shouldInsertDel = [conversationId isEqualToString:recipientId];
-
+    
     FIRDatabaseReference *messagessRefSender = [messagesRefSender child:recipientId];
     FIRDatabaseReference *messagessRefReceiver = [messagesRefReceiver child:senderId];
     
@@ -607,7 +705,7 @@ static ChatManager *sharedInstance = nil;
                             BOOL success = !error;
                             
                             if (success) {
-                                [self removeMessageFromDb:messageId];
+                                [self removeMessageFromDb:messageId callback:nil];
                                 
                                 if (isLastChildSender) {
                                     [[conversationsRefSender child:@"last_message_text"] setValue:@" "];
@@ -617,7 +715,7 @@ static ChatManager *sharedInstance = nil;
                                     [[conversationsRefReceiver child:@"last_message_text"] setValue:@" "];
                                 }
                                 
-                                [self resetLastMessageInConversation:conversationId];
+                                [self resetLastMessageInConversation:conversationId callback:nil];
                             }
                             
                             // insert the deletion
@@ -630,13 +728,13 @@ static ChatManager *sharedInstance = nil;
                             }
                         }];
                     } else {
-                        [self removeMessageFromDb:messageId];
+                        [self removeMessageFromDb:messageId callback:nil];
                         
                         if (isLastChildSender) {
                             [[conversationsRefSender child:@"last_message_text"] setValue:@" "];
                         }
                         
-                        [self resetLastMessageInConversation:conversationId];
+                        [self resetLastMessageInConversation:conversationId callback:nil];
                         
                         // insert the deletion
                         if (shouldInsertDel) {
@@ -836,5 +934,6 @@ static NSString *PROFILE_THUMB_PHOTO_NAME = @"thumb_photo.jpg";
 // **** PROFILE IMAGE URL - END ****
 
 @end
+
 
 

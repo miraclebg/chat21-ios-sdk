@@ -52,8 +52,8 @@
     NSString *senderFullname = snapshot.value[CONV_SENDER_FULLNAME_KEY];
     NSString *recipientFullname = snapshot.value[CONV_RECIPIENT_FULLNAME_KEY];
     NSString *channel_type = snapshot.value[CONV_CHANNEL_TYPE_KEY];
-//    NSString *groupId = snapshot.value[CONV_GROUP_ID_KEY];
-//    NSString *groupName = snapshot.value[CONV_GROUP_NAME_KEY];
+    //    NSString *groupId = snapshot.value[CONV_GROUP_ID_KEY];
+    //    NSString *groupName = snapshot.value[CONV_GROUP_NAME_KEY];
     NSNumber *timestamp = snapshot.value[CONV_TIMESTAMP_KEY];
     NSNumber *is_new = snapshot.value[CONV_IS_NEW_KEY];
     NSNumber *status = snapshot.value[CONV_STATUS_KEY];
@@ -90,8 +90,8 @@
     conversation.conversWith = conversWith;
     conversation.conversWith_fullname = conversWithFullName;
     conversation.channel_type = channel_type;
-//    conversation.groupId = groupId;
-//    conversation.groupName = groupName;
+    //    conversation.groupId = groupId;
+    //    conversation.groupName = groupName;
     conversation.status = (int)[status integerValue];
     conversation.attributes = attributes;
     conversation.user = me.userId;
@@ -99,19 +99,19 @@
 }
 
 -(BOOL)isDirect {
-//    //NSLog(@"conv: %@, self.channel_type: %@",self.last_message_text, self.channel_type);
+    //    //NSLog(@"conv: %@, self.channel_type: %@",self.last_message_text, self.channel_type);
     return ([self.channel_type isEqualToString:MSG_CHANNEL_TYPE_DIRECT] || self.channel_type == nil) ? YES : NO;
 }
 
 /*
--(NSString *)thumbImageURL {
-    if (!self.isDirect) {
-        NSString *groupId = self.recipient;
-        return [ChatManager profileThumbImageURLOf:groupId];
-    } else {
-        return [ChatManager profileThumbImageURLOf:self.conversWith];
-    }
-}*/
+ -(NSString *)thumbImageURL {
+ if (!self.isDirect) {
+ NSString *groupId = self.recipient;
+ return [ChatManager profileThumbImageURLOf:groupId];
+ } else {
+ return [ChatManager profileThumbImageURLOf:self.conversWith];
+ }
+ }*/
 
 //- (BOOL)isEqual:(id)object {
 //    ChatConversation *conv = (ChatConversation *)object;
@@ -119,3 +119,4 @@
 //}
 
 @end
+

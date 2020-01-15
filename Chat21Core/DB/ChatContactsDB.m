@@ -8,6 +8,7 @@
 
 #import "ChatContactsDB.h"
 #import "ChatUser.h"
+#import "ChatManager.h"
 
 static ChatContactsDB *sharedInstance = nil;
 //static sqlite3 *database = nil;
@@ -34,7 +35,7 @@ static ChatContactsDB *sharedInstance = nil;
 -(id)init {
     if (self = [super init]) {
         serialDatabaseQueue = dispatch_queue_create("db.sqllite", DISPATCH_QUEUE_SERIAL);
-        self.logQuery = YES;
+        self.logQuery = NO;
         database = nil;
         statement = nil;
         statement_insert = nil;
@@ -42,27 +43,8 @@ static ChatContactsDB *sharedInstance = nil;
     return self;
 }
 
-- (void)dealloc {
-    [self closeHandle];
-}
-
-- (void)closeHandle {
-    if (database) {
-        sqlite3_close_v2(database);
-        database = nil;
-    }
-    databasePath = nil;
-}
-
 // name only [a-zA-Z0-9_]
 -(BOOL)createDBWithName:(NSString *)name {
-    
-    if (!name || !name.length) {
-        return NO;
-    }
-    
-    [self closeHandle];
-    
     NSString *docsDir;
     NSURL *urlPath = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
     docsDir = urlPath.path;
@@ -70,99 +52,110 @@ static ChatContactsDB *sharedInstance = nil;
     if (name) {
         db_name = [[NSString alloc] initWithFormat:@"%@_contacts.db", name];
     }
-    databasePath = [[NSString alloc] initWithString:
+    self.databasePath = [[NSString alloc] initWithString:
                     [docsDir stringByAppendingPathComponent: db_name]];
-    //NSLog(@"Using contacts database: %@", databasePath);
+    [ChatManager logDebug:@"Init database: %@", self.databasePath];
     BOOL isSuccess = YES;
     NSFileManager *filemgr = [NSFileManager defaultManager];
     
     // **** TESTING ONLY ****
-    // if you add another table or change an existing one you must (for the moment) drop the DB
     //    [self drop_database];
-    const char *dbpath = [databasePath UTF8String];
+    const char *dbpath = [self.databasePath UTF8String];
     
-    if ([filemgr fileExistsAtPath: databasePath ] == NO) {
-        //NSLog(@"Database %@ not exists. Creating...", databasePath);
-        //        const char *dbpath = [databasePath UTF8String];
+    if ([filemgr fileExistsAtPath: self.databasePath ] == NO) {
+        [ChatManager logDebug:@"Database %@ not exists. Creating...", self.databasePath];
         int result;
         result = sqlite3_open_v2(dbpath, &database, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL);
         if (result == SQLITE_OK) {
             char *errMsg;
-            // if (self.logQuery) {//NSLog(@"**** CREATING TABLE CONTACTS...");}
+            if (self.logQuery) {[ChatManager logDebug:@"**** CREATING TABLE CONTACTS..."];}
             const char *sql_stmt_contacts =
-            "create table if not exists contacts (contactId text primary key, firstname text, lastname text, fullname text, email text, imageurl text, createdon real)";
+            "create table if not exists contacts (contactId text primary key, firstname text, lastname text, fullname text, email text, imageurl text, createdon integer)";
             if (sqlite3_exec(database, sql_stmt_contacts, NULL, NULL, &errMsg) != SQLITE_OK) {
                 isSuccess = NO;
-                NSLog(@"Failed to create table contacts. ERROR: %s", errMsg);
+                [ChatManager logError:@"Failed to create table contacts. ERROR: %s", errMsg];
             }
             else {
-                //NSLog(@"Table contacts successfully created.");
+                [ChatManager logDebug:@"Table contacts successfully created."];
+                [self upgradeSchema:dbpath];
             }
-            
-            //            NSString *updateSQL = [NSString stringWithFormat:@"UPDATE contacts SET firstname = ?, lastname = ?, fullname = ?, email = ?, imageurl = ?, createdon = ? WHERE contactId = ?"];
-            //            sqlite3_prepare(database, [updateSQL UTF8String], -1, &statement_insert, NULL);
-            
-            //            sqlite3_close(database);
             return  isSuccess;
         }
         else {
             isSuccess = NO;
-            NSLog(@"Failed to open/create database");
+            [ChatManager logError:@"Failed to open/create database"];
         }
     } else {
-        //NSLog(@"Database %@ already exists. Opening.", databasePath);
+        [ChatManager logDebug:@"Database %@ already exists. Opening.", self.databasePath];
         if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
+            [self upgradeSchema:dbpath];
             return  isSuccess;
         }
         else {
             isSuccess = NO;
-            NSLog(@"Failed to open database.");
+            [ChatManager logError:@"Failed to open database."];
         }
     }
     return isSuccess;
 }
 
-// only for test
--(void)drop_database {
-    //NSLog(@"DROPPING ARCHIVE: %@", databasePath);
-    NSFileManager *filemgr = [NSFileManager defaultManager];
-    
-    if ([filemgr fileExistsAtPath: databasePath ] == YES) {
-        NSError *error;
-        [filemgr removeItemAtPath:databasePath error:&error];
-        if (error){
-            NSLog(@"failed to drop db: %@", error);
+-(void)upgradeSchema:(const char *)dbpath {
+    // version schema
+    // or test if the column exists
+    // https://stackoverflow.com/questions/3604310/alter-table-add-column-if-not-exists-in-sqlite
+    if (self.logQuery) {[ChatManager logDebug:@"Upgrading schema"];}
+    int result;
+    result = sqlite3_open_v2(dbpath, &database, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE, NULL);
+    if (result == SQLITE_OK) {
+        if (self.logQuery) {[ChatManager logDebug:@"**** UPGRADING TABLE contacts..."];}
+        
+        if (self.logQuery) {[ChatManager logDebug:@"alter table contacts add column imagechangedat integer"];}
+        char *errMsg;
+        const char *sql_stmt_alter =
+        "alter table contacts add column imagechangedat integer";
+        if (sqlite3_exec(database, sql_stmt_alter, NULL, NULL, &errMsg) != SQLITE_OK) {
+            if (self.logQuery) {[ChatManager logDebug:@"Failed to alter table contacts (adding column 'imagechangedat integer')"];}
         }
+        else {
+            if (self.logQuery) {[ChatManager logDebug:@"Table contacts successfully altered (added 'imagechangedat integer')."];}
+        }
+        sqlite3_close(database);
+        database = nil;
     }
-    [self closeHandle];
+    else {
+        if (self.logQuery) {[ChatManager logDebug:@"Failed to alter table messages."];}
+    }
 }
+
+// only for test
+//-(void)drop_database {
+//    [ChatManager logDebug:@"DROPPING ARCHIVE: %@", databasePath];
+//    NSFileManager *filemgr = [NSFileManager defaultManager];
+//    if ([filemgr fileExistsAtPath: databasePath ] == YES) {
+//        NSError *error;
+//        [filemgr removeItemAtPath:databasePath error:&error];
+//        if (error){
+//            [ChatManager logError:@"%@", error];
+//        }
+//    }
+//}
 
 // *************
 // CONTACTS
 // *************
 
--(void)insertOrUpdateContactSyncronized:(ChatUser *)contact completion:(void(^)(void)) callback {
-    
-    if (!database) {
-        if (callback != nil) {
-            callback();
-        }
-        return;
-    }
-    
+-(void)insertOrUpdateContactSyncronized:(ChatUser *)contact completion:(void(^)(BOOL success)) callback {
     dispatch_async(serialDatabaseQueue, ^{
-        //        //NSLog(@"INSERT OR UPDATE CONTACT: %@/%@ saved-date: %@", contact.userId, contact.fullname, contact.createdonAsDate);
         [self getContactByIdSyncronized:contact.userId completion:^(ChatUser *user) {
             if (user) {
-                [self updateContact:contact];
+                BOOL ret = [self updateContact:contact];
                 if (callback != nil) {
-                    callback();
+                    callback(ret);
                 }
-            }
-            else {
-                [self insertContact:contact];
+            } else {
+                BOOL ret = [self insertContact:contact];
                 if (callback != nil) {
-                    callback();
+                    callback(ret);
                 }
             }
         }];
@@ -170,15 +163,8 @@ static ChatContactsDB *sharedInstance = nil;
 }
 
 -(BOOL)insertContact:(ChatUser *)contact {
-    
-    if (!database) {
-        return NO;
-    }
-    
-    //    const char *dbpath = [databasePath UTF8String];
-    //    if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
-    //NSLog(@"Insert contact %@", contact.fullname);
-    NSString *insertSQL = [NSString stringWithFormat:@"insert into contacts (contactId, firstname, lastname, fullname, email, imageurl, createdon) values (?, ?, ?, ?, ?, ?, ?)"];
+    [ChatManager logDebug:@"Insert contact %@", contact.fullname];
+    NSString *insertSQL = [NSString stringWithFormat:@"insert into contacts (contactId, firstname, lastname, fullname, email, imageurl, imagechangedat, createdon) values (?, ?, ?, ?, ?, ?, ?, ?)"];
     
     sqlite3_prepare(database, [insertSQL UTF8String], -1, &statement_insert, NULL);
     
@@ -188,35 +174,24 @@ static ChatContactsDB *sharedInstance = nil;
     sqlite3_bind_text(statement_insert, 4, [contact.fullname UTF8String], -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(statement_insert, 5, [contact.email UTF8String], -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(statement_insert, 6, [contact.imageurl UTF8String], -1, SQLITE_TRANSIENT);
-    sqlite3_bind_int(statement_insert, 7, (int)contact.createdon);
+    sqlite3_bind_int64(statement_insert, 7, (long)contact.imageChangedAt);
+    sqlite3_bind_int64(statement_insert, 8, (long)contact.createdon);
     
     if (sqlite3_step(statement_insert) == SQLITE_DONE) {
         sqlite3_finalize(statement_insert);
-        //            sqlite3_reset(statement_insert);
         return YES;
     }
     else {
-        NSLog(@"Error on insertContact.");
-        NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
+        [ChatManager logError:@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database)];
         sqlite3_reset(statement_insert);
         return NO;
     }
-    //    }
     return NO;
 }
 
 -(BOOL)updateContact:(ChatUser *)contact {
-    
-    if (!database) {
-        return NO;
-    }
-    
-    //    //NSLog(@"**** updating group %@", group.groupId);
-    //    const char *dbpath = [databasePath UTF8String];
-    //    if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
-    //NSLog(@"Update contact %@", contact.fullname);
-    NSString *updateSQL = [NSString stringWithFormat:@"UPDATE contacts SET firstname = ?, lastname = ?, fullname = ?, email = ?, imageurl = ?, createdon = ? WHERE contactId = ?"];
-    //        //NSLog(@"QUERY:%@", updateSQL);
+    [ChatManager logDebug:@"Update contact %@", contact.fullname];
+    NSString *updateSQL = [NSString stringWithFormat:@"UPDATE contacts SET firstname = ?, lastname = ?, fullname = ?, email = ?, imageurl = ?, imagechangedat = ?, createdon = ? WHERE contactId = ?"];
     
     sqlite3_prepare(database, [updateSQL UTF8String], -1, &statement, NULL);
     
@@ -225,36 +200,27 @@ static ChatContactsDB *sharedInstance = nil;
     sqlite3_bind_text(statement, 3, [contact.fullname UTF8String], -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(statement, 4, [contact.email UTF8String], -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(statement, 5, [contact.imageurl UTF8String], -1, SQLITE_TRANSIENT);
-    sqlite3_bind_int(statement, 6, (int)contact.createdon);
-    sqlite3_bind_text(statement, 7, [contact.userId UTF8String], -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int64(statement, 6, (long)contact.imageChangedAt);
+    sqlite3_bind_int64(statement, 7, (long)contact.createdon);
+    sqlite3_bind_text(statement, 8, [contact.userId UTF8String], -1, SQLITE_TRANSIENT);
     
     if (sqlite3_step(statement) == SQLITE_DONE) {
-        //            sqlite3_finalize(statement);
         sqlite3_reset(statement);
-        //NSLog(@"Contact successfully updated.");
+        [ChatManager logDebug:@"Contact successfully updated."];
         return YES;
     }
     else {
-        NSLog(@"Error while updating contact.");
-        NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
+        [ChatManager logDebug:@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database)];
         sqlite3_reset(statement);
         return NO;
     }
-    //    }
     return NO;
 }
 
-static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname, lastname, fullname, email, imageurl, createdon FROM contacts ";
+static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname, lastname, fullname, email, imageurl, imagechangedat, createdon FROM contacts ";
 
 -(NSArray*)getAllContacts {
-    
-    if (!database) {
-        return nil;
-    }
-    
     NSMutableArray *contacts = [[NSMutableArray alloc] init];
-    //    const char *dbpath = [databasePath UTF8String];
-    //    if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
     NSString *querySQL = [NSString stringWithFormat:@"%@ order by fullname desc", SELECT_FROM_CONTACTS_STATEMENT];
     const char *query_stmt = [querySQL UTF8String];
     if (sqlite3_prepare_v2(database, query_stmt, -1, &statement, NULL) == SQLITE_OK) {
@@ -264,21 +230,21 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
         }
         sqlite3_reset(statement);
     } else {
-        NSLog(@"**** PROBLEMS WHILE QUERYING CONTACTS...");
-        NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
+        [ChatManager logError:@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database)];
     }
-    //    }
     return contacts;
 }
 
+-(void)getMostRecentContactSyncronizedWithCompletion:(void(^)(ChatUser *contact)) callback {
+    dispatch_async(serialDatabaseQueue, ^{
+        ChatUser *contact = [self getMostRecentContact];
+        callback(contact);
+    });
+}
+
 -(ChatUser *)getMostRecentContact {
-    
-    if (!database) {
-        return nil;
-    }
-    
     ChatUser *contact;
-    const char *dbpath = [databasePath UTF8String];
+    const char *dbpath = [self.databasePath UTF8String];
     if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
         NSString *querySQL = [NSString stringWithFormat:@"%@ order by createdon desc LIMIT 1", SELECT_FROM_CONTACTS_STATEMENT];
         const char *query_stmt = [querySQL UTF8String];
@@ -288,22 +254,13 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
             }
             sqlite3_reset(statement);
         } else {
-            NSLog(@"**** PROBLEMS WHILE QUERYING CONTACTS...");
-            NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
+            [ChatManager logError:@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database)];
         }
     }
     return contact;
 }
 
 -(void)getContactByIdSyncronized:(NSString *)contactId completion:(void(^)(ChatUser *)) callback {
-    
-    if (!database) {
-        if (callback != nil) {
-            callback(nil);
-        }
-        return;
-    }
-    
     dispatch_async(serialDatabaseQueue, ^{
         ChatUser *user = [self getContactById:contactId];
         if (callback != nil) {
@@ -313,14 +270,6 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
 }
 
 -(void)getMultipleContactsByIdsSyncronized:(NSArray<NSString *> *)contactIds completion:(void(^)(NSArray<ChatUser *> *)) callback {
-    
-    if (!database) {
-        if (callback != nil) {
-            callback(nil);
-        }
-        return;
-    }
-    
     dispatch_async(serialDatabaseQueue, ^{
         NSArray<ChatUser *> *users = [self getMultipleContactsByIds:contactIds];
         if (callback != nil) {
@@ -330,11 +279,6 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
 }
 
 -(ChatUser *)getContactById:(NSString *)contactId {
-    
-    if (!database) {
-        return nil;
-    }
-    
     ChatUser *contact = nil;
     NSString *querySQL = [NSString stringWithFormat:
                           @"%@ where contactId = \"%@\"",SELECT_FROM_CONTACTS_STATEMENT, contactId];
@@ -345,20 +289,14 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
         }
         sqlite3_reset(statement);
     } else {
-        NSLog(@"**** PROBLEMS WHILE QUERYING CONTACTS...");
-        NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
+        [ChatManager logError:@"**** PROBLEMS WHILE QUERYING CONTACTS..."];
+        [ChatManager logError:@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database)];
     }
-    //    }
     return contact;
 }
 
 -(NSArray<ChatUser *> *)getMultipleContactsByIds:(NSArray *)contactIds {
-    
-    if (!database) {
-        return nil;
-    }
-    
-    //NSLog(@"Searching multiple contacts by ids: %@", contactIds);
+    [ChatManager logDebug:@"Searching multiple contacts by ids: %@", contactIds];
     NSMutableArray<ChatUser *> *contacts = [[NSMutableArray alloc] init];
     if (contactIds.count == 0) {
         return contacts;
@@ -375,8 +313,6 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
         }
         contactsIds_query_part = [contactsIds_query_part stringByAppendingString:id_for_query];
     }
-    //    const char *dbpath = [databasePath UTF8String];
-    //    if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
     NSString *querySQL = [NSString stringWithFormat:
                           @"%@ where contactId in %@", SELECT_FROM_CONTACTS_STATEMENT, contactsIds_query_part];
     const char *query_stmt = [querySQL UTF8String];
@@ -387,26 +323,14 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
         }
         sqlite3_reset(statement);
     } else {
-        NSLog(@"**** PROBLEMS WHILE QUERYING CONTACTS...");
-        NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
+        [ChatManager logDebug:@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database)];
     }
-    //    }
     return contacts;
 }
 
 -(void)searchContactsByFullnameSynchronized:(NSString *)searchString completion:(void (^)(NSArray<ChatUser *> *))callback {
-    
-    if (!database) {
-        if (callback != nil) {
-            callback(nil);
-        }
-        return;
-    }
-    
     dispatch_async(serialDatabaseQueue, ^{
         NSMutableArray<ChatUser *> *contacts = [[NSMutableArray alloc] init];
-        //        const char *dbpath = [databasePath UTF8String];
-        //        if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
         NSString *querySQL = [NSString stringWithFormat:
                               @"%@ WHERE fullname LIKE \"%%%@%%\" ORDER BY fullname",SELECT_FROM_CONTACTS_STATEMENT, searchString]; //  LIMIT 50
         const char *query_stmt = [querySQL UTF8String];
@@ -417,118 +341,73 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
             }
             sqlite3_reset(self->statement);
         } else {
-            NSLog(@"**** PROBLEMS WHILE SEARCHING CONTACTS...");
-            NSLog(@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database));
+            [ChatManager logError:@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database)];
         }
-        //        }
         if (callback != nil) {
             callback(contacts);
         }
     });
 }
 
-//-(void)countContactsSynchronizedWithCompletion:(void (^)(NSInteger))callback {
-//    dispatch_async(serialDatabaseQueue, ^{
-//        NSInteger count = 0;
-//        const char *dbpath = [databasePath UTF8String];
-//        if (sqlite3_open(dbpath, &database) == SQLITE_OK) {
-//            NSString *querySQL = [NSString stringWithFormat:
-//                                  @"SELECT (COUNT) FROM contacts"];
-//            const char *query_stmt = [querySQL UTF8String];
-//            if (sqlite3_prepare_v2(database, query_stmt, -1, &statement, NULL) == SQLITE_OK) {
-//                while (sqlite3_step(statement) == SQLITE_ROW) {
-//                    const char* _contactId = (const char *) sqlite3_column_text(statement, 0);
-//                    //    //NSLog(@">>>>>>>>>>> groupID = %s", _groupId);
-//                    NSString *contactId = nil;
-//                    if (_contactId) {
-//                        contactId = [[NSString alloc] initWithUTF8String:_contactId];
-//                    }
-//                }
-//                sqlite3_reset(statement);
-//            } else {
-//                //NSLog(@"**** PROBLEMS WHILE SEARCHING CONTACTS...");
-//                //NSLog(@"Database returned error %d: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
-//            }
-//        }
-//        callback(count);
-//    });
-//}
-
--(void)removeContactSynchronized:(NSString *)contactId completion:(void(^)(void)) callback {
-    
-    if (!database) {
-        if (callback != nil) {
-            callback();
-        }
-        return;
-    }
-    
+-(void)removeContactSynchronized:(NSString *)contactId completion:(void(^)(BOOL success)) callback {
     dispatch_async(serialDatabaseQueue, ^{
         NSString *sql = [NSString stringWithFormat:@"DELETE FROM contacts WHERE contactId = \"%@\"", contactId];
-        //        //NSLog(@"**** QUERY:%@", sql);
         const char *stmt = [sql UTF8String];
         sqlite3_prepare_v2(self->database, stmt,-1, &self->statement, NULL);
+        BOOL success = NO;
         if (sqlite3_step(self->statement) == SQLITE_DONE) {
             sqlite3_reset(self->statement);
+            success = YES;
         }
         else {
-            //NSLog(@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database));
+            [ChatManager logDebug:@"Database returned error %d: %s", sqlite3_errcode(self->database), sqlite3_errmsg(self->database)];
             sqlite3_reset(self->statement);
         }
         if (callback != nil) {
-            callback();
+            callback(success);
         }
     });
 }
 
 -(ChatUser *)contactFromStatement:(sqlite3_stmt *)statement {
-    
-    // SELECT contactId, firstname, lastname, fullname, email, imageurl
-    
-    //    //NSLog(@"== GROUP FROM STATEMENT ==");
     const char* _contactId = (const char *) sqlite3_column_text(statement, 0);
-    //    //NSLog(@">>>>>>>>>>> groupID = %s", _groupId);
     NSString *contactId = nil;
     if (_contactId) {
         contactId = [[NSString alloc] initWithUTF8String:_contactId];
     }
-    
     const char* _firstname = (const char *) sqlite3_column_text(statement, 1);
-    //    //NSLog(@">>>>>>>>>>> user = %s", _user);
     NSString *firstname = nil;
     if (_firstname) {
         firstname = [[NSString alloc] initWithUTF8String:_firstname];
     }
     
     const char* _lastname = (const char *) sqlite3_column_text(statement, 2);
-    //    //NSLog(@">>>>>>>>>>> groupName = %s", _groupName);
     NSString *lastname = nil;
     if (_lastname) {
         lastname = [[NSString alloc] initWithUTF8String:_lastname];
     }
     
     const char* _fullname = (const char *) sqlite3_column_text(statement, 3);
-    //    //NSLog(@">>>>>>>>>>> owner = %s", _owner);
     NSString *fullname = nil;
     if (_fullname) {
         fullname = [[NSString alloc] initWithUTF8String:_fullname];
     }
     
     const char* _email = (const char *) sqlite3_column_text(statement, 4);
-    //    //NSLog(@">>>>>>>>>>> owner = %s", _owner);
     NSString *email = nil;
     if (_email) {
         email = [[NSString alloc] initWithUTF8String:_email];
     }
     
     const char* _imageurl = (const char *) sqlite3_column_text(statement, 5);
-    //    //NSLog(@">>>>>>>>>>> owner = %s", _owner);
     NSString *imageurl = nil;
     if (_imageurl) {
-        imageurl = [[NSString alloc] initWithUTF8String:_fullname];
+        imageurl = [[NSString alloc] initWithUTF8String:_imageurl];
     }
     
-    const int createdon = (const int) sqlite3_column_int(statement, 6);
+    const long imagechangedat = (const long) sqlite3_column_int64(statement, 6);
+    
+    const long createdon = (const long) sqlite3_column_int64(statement, 7);
     
     ChatUser *contact = [[ChatUser alloc] init];
     contact.userId = contactId;
@@ -536,13 +415,12 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
     contact.lastname = lastname;
     contact.fullname = fullname;
     contact.email = email;
+    contact.imageChangedAt = imagechangedat;
     contact.imageurl = imageurl;
     contact.createdon = createdon;
     return contact;
 }
 
 @end
-
-
 
 

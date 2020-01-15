@@ -54,6 +54,10 @@ static NSString* const CONV_ATTRIBUTES_KEY = @"attributes";
 @property (nonatomic, assign) int status;
 @property (nonatomic, assign) int indexInMemory;
 @property (nonatomic, strong) NSDictionary *attributes; // firebase
+@property (nonatomic, strong, nonnull) NSString *mtype; // firebase
+
+@property (nonatomic, strong) NSDictionary * _Nullable snapshot;
+@property (nonatomic, strong) NSString * _Nullable snapshotAsJSONString;
 
 @property (nonatomic, assign) BOOL isDirect;
 
@@ -65,3 +69,4 @@ static NSString* const CONV_ATTRIBUTES_KEY = @"attributes";
 
 
 @end
+

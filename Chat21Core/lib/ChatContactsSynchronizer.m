@@ -208,10 +208,12 @@ static NSString *FIRST_SYNCHRO_KEY = @"first-contacts-synchro";
 -(void)insertOrUpdateContactOnDB:(ChatUser *)user {
     //    //NSLog(@"INSERTING OR UPDATING CONTACT WITH NAME: %@ (%@ %@)", user.userId, user.firstname, user.lastname);
     __block ChatUser *_user = user;
-    [[ChatContactsDB getSharedInstance] insertOrUpdateContactSyncronized:_user completion:^{
+    [[ChatContactsDB getSharedInstance] insertOrUpdateContactSyncronized:_user completion:^(BOOL success) {
         //self.synchronizing ? //NSLog(@"SYNCHRONIZING") : //NSLog(@"NO-SYNCHRONIZING");
         //_user = nil;
-        [self startSynchTimer];
+        if (success) {
+            [self startSynchTimer];
+        }
     }];
 }
 
