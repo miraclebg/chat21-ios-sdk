@@ -10,7 +10,8 @@
 #import "ChatUtil.h"
 #import "ChatUser.h"
 #import "ChatManager.h"
-#import <Firebase/Firebase.h>
+#import "FirebaseDatabase/FIRDatabaseReference.h"
+#import "FirebaseMessaging/FirebaseMessaging.h"
 
 @implementation ChatPresenceHandler
 
@@ -45,34 +46,36 @@
     FIRDatabaseReference *myConnectionsRef = [ChatPresenceHandler onlineRefForUser:userid];
     FIRDatabaseReference *lastOnlineRef = [ChatPresenceHandler lastOnlineRefForUser:userid];
     
-    //    NSString *connectedRefURL = [[NSString alloc] initWithFormat:@"%@/.info/connected", self.firebaseRef];
     NSString *connectedRefURL = @"/.info/connected";
     FIRDatabaseReference *connectedRef = [[[FIRDatabase database] reference] child:connectedRefURL];
     if (self.connectionsRefHandle) {
         [connectedRef removeObserverWithHandle:self.connectionsRefHandle];
     }
+    
+    
     self.connectionsRefHandle = [connectedRef observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
-        if([snapshot.value boolValue]) {
-            // connection established (or I've reconnected after a loss of connection)
-            
-            // add this device to my connections list
-            // this value could contain info about the device or a timestamp instead of just true
+        [ChatManager logDebug:@"setupMyPresence: snapshot %@ - %d", snapshot, [snapshot.value boolValue]];
+        BOOL status = [snapshot.value boolValue];
+        if(status) {
+            [ChatManager logDebug:@"Connection established (or reconnected after a loss of connection)"];
             if (!self.deviceConnectionRef) {
                 if (self.deviceConnectionKey) {
                     self.deviceConnectionRef = [myConnectionsRef child:self.deviceConnectionKey];
                 }
                 else {
-                    self.deviceConnectionRef = [myConnectionsRef childByAutoId];
+                    NSString *FCMToken = [FIRMessaging messaging].FCMToken;
+                    FCMToken != nil ? self.deviceConnectionRef = [myConnectionsRef child:FCMToken] : [myConnectionsRef childByAutoId];
                     self.deviceConnectionKey = self.deviceConnectionRef.key;
                 }
-                [self.deviceConnectionRef setValue:@YES];
-                // when this device disconnects, remove it
-                [self.deviceConnectionRef onDisconnectRemoveValue];
-                // when I disconnect, update the last time I was seen online
-                [lastOnlineRef onDisconnectSetValue:[FIRServerValue timestamp]];
-            } else {
-                //NSLog(@"self.deviceConnectionRef already set. Cannot be set again.");
             }
+            else {
+                [ChatManager logDebug:@"self.deviceConnectionRef already set. Cannot be set again."];
+            }
+            [self.deviceConnectionRef setValue:@YES];
+            // when this device disconnects, remove it
+            [self.deviceConnectionRef onDisconnectRemoveValue];
+            // when I disconnect, update the last time I was seen online
+            [lastOnlineRef onDisconnectSetValue:[FIRServerValue timestamp]];
         }
     }];
 }
@@ -82,17 +85,13 @@
     FIRDatabaseReference *onlineRef = [ChatPresenceHandler onlineRefForUser:userid];
     [onlineRef observeEventType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot *snapshot) {
         if(snapshot.exists) {
-            //            //NSLog(@"ONLINE: %@", snapshot);
             callback(YES);
-            //            self.online = YES;
-            //            [self onlineStatus];
         } else {
             callback(NO);
-            //            self.online = NO;
-            //            [self onlineStatus];
         }
     }];
 }
+
 -(void)lastOnlineDateForUser:(NSString *)userid withCallback:(void (^)(NSDate *lastOnlineDate))callback {
     // apps/{TENANT}/presence/{USERID}/lastOnline
     FIRDatabaseReference *lastOnlineRef = [ChatPresenceHandler lastOnlineRefForUser:userid];

@@ -72,8 +72,8 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 
 -(void)addConversationHandler:(ChatConversationHandler *)handler;
 -(ChatConversationsHandler *)getAndStartConversationsHandler;
--(ChatConversationHandler *)getConversationHandlerForRecipient:(ChatUser *)recipient;
--(ChatConversationHandler *)getConversationHandlerForGroup:(ChatGroup *)group;
+-(void)getConversationHandlerForRecipient:(ChatUser *)recipient completion:(void(^)(ChatConversationHandler *)) callback;
+-(void)getConversationHandlerForGroup:(ChatGroup *)group completion:(void(^)(ChatConversationHandler *)) callback;
 //-(void)startConversationHandler:(ChatConversation *)conv;
 
 - (void)initPresenceHandler;
