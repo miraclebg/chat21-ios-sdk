@@ -51,7 +51,7 @@ static ChatManager *sharedInstance = nil;
     sharedInstance.groupsMode = YES;
     sharedInstance.synchronizeContacts = YES;
     
-#if DEBUG || TESTING
+#if TESTING
     sharedInstance.logLevel = CHAT_LOG_LEVEL_DEBUG;
 #else
     sharedInstance.logLevel = CHAT_LOG_LEVEL_INFO;
