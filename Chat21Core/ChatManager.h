@@ -19,6 +19,7 @@
 @class ChatPresenceHandler;
 @class ChatConversationsVC;
 @class ChatUser;
+@class ChatMessage;
 @class ChatContactsSynchronizer;
 @class ChatSpeaker;
 @class ChatConversationHandler;
@@ -53,8 +54,15 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 @property (strong, nonatomic) FIRAuthStateDidChangeListenerHandle authStateDidChangeListenerHandle;
 //@property (assign, nonatomic) FIRDatabaseHandle connectedRefHandle;
 @property (assign, nonatomic) BOOL groupsMode;
+@property (assign, nonatomic) BOOL synchronizeContacts;
 @property (assign, nonatomic) NSInteger tabBarIndex;
 @property (assign, nonatomic) NSInteger logLevel;
+
+@property (nonatomic, copy) ChatMessage *(^onBeforeMessageSend)(ChatMessage *msg);
+@property (nonatomic, copy) ChatMessage *(^onMessageNew)(ChatMessage *msg);
+@property (nonatomic, copy) ChatMessage *(^onMessageUpdate)(ChatMessage *msg);
+@property (nonatomic, copy) ChatConversation *(^onCoversationArrived)(ChatConversation *conv);
+@property (nonatomic, copy) ChatConversation *(^onCoversationUpdated)(ChatConversation *conv);
 
 +(void)configureWithAppId:(NSString *)app_id;
 +(void)configure;
