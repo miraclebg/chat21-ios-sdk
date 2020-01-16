@@ -21,6 +21,8 @@
 @interface ChatConversationHandler()
 
 @property (nonatomic, strong) dispatch_queue_t serialMessagesMemoryQueue;
+@property (nonatomic, strong) dispatch_queue_t serialMessagesSendQueue;
+@property (nonatomic, strong) dispatch_queue_t serialMessagesReceiveQueue;
 
 @end
 
@@ -35,6 +37,8 @@
 
 -(void)basicInit {
     self.serialMessagesMemoryQueue = dispatch_queue_create("messagesQueue", DISPATCH_QUEUE_SERIAL);
+    self.serialMessagesSendQueue = dispatch_queue_create("messagesSendQueue", DISPATCH_QUEUE_SERIAL);
+    self.serialMessagesReceiveQueue = dispatch_queue_create("messagesReceiveQueue", DISPATCH_QUEUE_SERIAL);
     self.lastEventHandle = 1;
     self.lastEventHandle32 = 1;
     self.imageDownloader = [[ChatImageDownloadManager alloc] init];
@@ -122,7 +126,7 @@
         // IMPORTANT: this query ignores messages without a timestamp.
         // IMPORTANT: This callback is called also for newly locally created messages still not sent.
         [ChatManager logDebug:@"NEW MESSAGE SNAPSHOT: %@", snapshot];
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        dispatch_async(self.serialMessagesReceiveQueue, ^{
             [ChatManager logDebug:@"Asynch message processing pipeline started...."];
             if (![self isValidMessageSnapshot:snapshot]) {
                 [ChatManager logDebug:@"New Message handler. Discarding invalid snapshot: %@", snapshot];
@@ -166,7 +170,7 @@
     
     self.updated_messages_ref_handle = [self.messagesRef observeEventType:FIRDataEventTypeChildChanged withBlock:^(FIRDataSnapshot *snapshot) {
         [ChatManager logDebug:@"UPDATED MESSAGE SNAPSHOT: %@", snapshot];
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        dispatch_async(self.serialMessagesReceiveQueue, ^{
             if (![self isValidMessageSnapshot:snapshot]) {
                 [ChatManager logDebug:@"Message Updated. Discarding invalid snapshot: %@", snapshot];
                 return;
@@ -209,46 +213,49 @@
     self.messagesToDeleteRef = [[[self.messagesRef parent] parent] child:@"messagesToDelete"];
     
     [self.messagesToDeleteRef observeSingleEventOfType:FIRDataEventTypeValue withBlock:^(FIRDataSnapshot * _Nonnull snapshot) {
-        NSDictionary *vals = snapshot.value;
-        
-        // delete all previously deleted messages from local cache
-        // then wipe all data in this key
-        if ([vals isKindOfClass:[NSDictionary class]]) {
-            NSArray *messageIds = vals.allKeys;
+        dispatch_async(self.serialMessagesReceiveQueue, ^{
+            NSDictionary *vals = snapshot.value;
             
-            for(NSString *messageId in messageIds) {
-                [self removeMessageFromMemory:messageId];
+            // delete all previously deleted messages from local cache
+            // then wipe all data in this key
+            if ([vals isKindOfClass:[NSDictionary class]]) {
+                NSArray *messageIds = vals.allKeys;
                 
-                [[ChatDB getSharedInstance] removeMessage:messageId completion:^(BOOL success) {
-                    if (success) {
-                        ChatMessage *cm = [ChatMessage new];
-                        cm.messageId = messageId;
-                        [self notifyEvent:ChatEventMessageDeleted message:cm];
-                    }
-                }];
+                for(NSString *messageId in messageIds) {
+                    [self removeMessageFromMemory:messageId completion:^{
+                        [[ChatDB getSharedInstance] removeMessage:messageId completion:^(BOOL success) {
+                            if (success) {
+                                ChatMessage *cm = [ChatMessage new];
+                                cm.messageId = messageId;
+                                [self notifyEvent:ChatEventMessageDeleted message:cm];
+                            }
+                        }];
+                    }];
+                }
             }
-        }
-        
-        [self.messagesToDeleteRef removeValue];
+            
+            [self.messagesToDeleteRef removeValue];
+        });
     }];
     
     self.deleted_messages_ref_handle = [self.messagesRef observeEventType:FIRDataEventTypeChildRemoved withBlock:^(FIRDataSnapshot *snapshot) {
-        //NSLog(@"UPDATED MESSAGE SNAPSHOT: %@", snapshot);
-        if (![self isValidMessageSnapshot:snapshot]) {
-            //NSLog(@"Discarding invalid snapshot: %@", snapshot);
-            return;
-        }
-        
-        ChatMessage *message = [ChatMessage messageFromfirebaseSnapshotFactory:snapshot];
-        
-        [self removeMessageFromMemory:message.messageId];
-        
-        [[ChatDB getSharedInstance] removeMessage:message.messageId completion:^(BOOL success) {
-            if (success) {
-                [self notifyEvent:ChatEventMessageDeleted message:message];
+        dispatch_async(self.serialMessagesReceiveQueue, ^{
+            //NSLog(@"UPDATED MESSAGE SNAPSHOT: %@", snapshot);
+            if (![self isValidMessageSnapshot:snapshot]) {
+                //NSLog(@"Discarding invalid snapshot: %@", snapshot);
+                return;
             }
-        }];
-        
+            
+            ChatMessage *message = [ChatMessage messageFromfirebaseSnapshotFactory:snapshot];
+            
+            [self removeMessageFromMemory:message.messageId completion:^{
+                [[ChatDB getSharedInstance] removeMessage:message.messageId completion:^(BOOL success) {
+                    if (success) {
+                        [self notifyEvent:ChatEventMessageDeleted message:message];
+                    }
+                }];
+            }];
+        });
     } withCancelBlock:^(NSError *error) {
         //NSLog(@"%@", error.description);
     }];
@@ -301,8 +308,7 @@
     message.messageId = messageRef.key;
     message.sender = self.senderId;
     message.senderFullname = self.user.fullname;
-    NSDate *now = [[NSDate alloc] init];
-    message.date = now;
+    message.date = [NSDate date];
     message.status = MSG_STATUS_SENDING;
     message.conversationId = self.conversationId; // = intelocutor-id, for local-db queries
     NSString *langID = [[NSLocale currentLocale] objectForKey: NSLocaleLanguageCode];
@@ -396,7 +402,7 @@
     // ON-BEFORE-MESSAGE-SAVE (IMPLEMENT) > I.E. SAVE ENCRYPTED
     [self createLocalMessage:message completion:^(NSString *messageId, NSError *error) {
         [ChatManager logDebug:@"Sending message type: %@ with id: %@", message.mtype, message.messageId];
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        dispatch_async(self.serialMessagesSendQueue, ^{
             [self sendMessage:message completion:^(ChatMessage *message, NSError *error) {
                 callback(message, error);
             }];
@@ -423,8 +429,7 @@
                 callback(m, error);
             }];
         }
-    }
-    else { // status != sending stops sending pipeline
+    } else { // status != sending stops sending pipeline
         [self updateMessageStatusInMemorySynchronized:message.messageId withStatus:message.status completion:^{
             [self notifyEvent:ChatEventMessageChanged message:message];
             
@@ -593,24 +598,30 @@
     });
 }
 
--(void)removeMessageFromMemory:(NSString*)messageId {
-    // find message...
-    NSInteger index = NSNotFound;
-    NSInteger i = 0;
-    
-    for (ChatMessage* msg in self.messages) {
-        if([msg.messageId isEqualToString:messageId]) {
-            index = i;
-            break;
+-(void)removeMessageFromMemory:(NSString*)messageId completion:(void(^)(void))callback {
+    dispatch_async(self.serialMessagesMemoryQueue, ^{
+        // find message...
+        NSInteger index = NSNotFound;
+        NSInteger i = 0;
+        
+        for (ChatMessage* msg in self.messages) {
+            if([msg.messageId isEqualToString:messageId]) {
+                index = i;
+                break;
+            }
+            i++;
         }
-        i++;
-    }
-    
-    if (index == NSNotFound) {
-        return;
-    }
-    
-    [self.messages removeObjectAtIndex:index];
+        
+        if (index == NSNotFound) {
+            return;
+        }
+        
+        [self.messages removeObjectAtIndex:index];
+        
+        if (callback) {
+            callback();
+        }
+    });
 }
 
 // observer
@@ -642,7 +653,15 @@
         eventCallbacks = [[NSMutableDictionary alloc] init];
         [self.eventObservers setObject:eventCallbacks forKey:@(eventType)];
     }
-    NSUInteger callback_handle = (NSUInteger) OSAtomicIncrement64Barrier(&_lastEventHandle);
+    
+    NSUInteger callback_handle = 0;
+    
+    if (sizeof(void*) == 4) {
+        callback_handle = (NSUInteger) OSAtomicIncrement32Barrier(&_lastEventHandle32);
+    } else if (sizeof(void*) == 8) {
+        callback_handle = (NSUInteger) OSAtomicIncrement64Barrier(&_lastEventHandle);
+    }
+    
     [eventCallbacks setObject:callback forKey:@(callback_handle)];
     return callback_handle;
 }

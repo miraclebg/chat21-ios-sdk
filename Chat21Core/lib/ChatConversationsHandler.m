@@ -18,6 +18,7 @@
 @interface ChatConversationsHandler()
 
 @property (nonatomic, strong) dispatch_queue_t serialConversationsMemoryQueue;
+@property (nonatomic, strong) dispatch_queue_t serialConversationsReceiveQueue;
 
 @end
 
@@ -28,6 +29,7 @@
         //        self.lastEventHandler = 1;
         //        self.firebaseRef = firebaseRef;
         self.serialConversationsMemoryQueue = dispatch_queue_create("conversationsQueue", DISPATCH_QUEUE_SERIAL);
+        self.serialConversationsReceiveQueue = dispatch_queue_create("conversationsReceiveMemoryQueue", DISPATCH_QUEUE_SERIAL);
         self.rootRef = [[FIRDatabase database] reference];
         self.tenant = tenant;
         self.loggeduser = user;
@@ -80,7 +82,7 @@
                                             queryStartingAtValue:@(lasttime)]
                                            observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot *snapshot) {
         [ChatManager logDebug:@"NEW CONVERSATION SNAPSHOT: %@", snapshot];
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        dispatch_async(self.serialConversationsReceiveQueue, ^{
             if (![self isValidConversationSnapshot:snapshot]) {
                 [ChatManager logDebug:@"Invalid conversation snapshot, discarding."];
                 return;
@@ -115,7 +117,7 @@
     
     self.conversations_ref_handle_changed = [[self.conversationsRef  queryOrderedByChild:@"timestamp"] observeEventType:FIRDataEventTypeChildChanged withBlock:^(FIRDataSnapshot *snapshot) {
         [ChatManager logDebug:@"CHANGED CONVERSATION SNAPSHOT: %@", snapshot];
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        dispatch_async(self.serialConversationsReceiveQueue, ^{
             ChatConversation *conversation = [ChatConversation conversationFromSnapshotFactory:snapshot me:self.loggeduser];
             ChatManager *chatm = [ChatManager getInstance];
             if (chatm.onCoversationUpdated) {

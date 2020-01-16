@@ -13,9 +13,10 @@
 #import "ChatContactsDB.h"
 #import <Firebase/Firebase.h>
 
-@interface ChatContactsSynchronizer () {
-    //    dispatch_queue_t serialDatabaseQueue;
-}
+@interface ChatContactsSynchronizer ()
+
+@property (nonatomic, strong) dispatch_queue_t serialReceiveQueue;
+
 @end
 
 @implementation ChatContactsSynchronizer
@@ -25,7 +26,7 @@
         self.rootRef = [[FIRDatabase database] reference];
         self.tenant = tenant;
         self.loggeduser = user;
-        //        serialDatabaseQueue = dispatch_queue_create("db.sqllite", DISPATCH_QUEUE_SERIAL);
+        self.serialReceiveQueue = dispatch_queue_create("serialChatContatsReceiveQueue", DISPATCH_QUEUE_SERIAL);
     }
     return self;
 }
@@ -82,7 +83,7 @@
     if (!self.contact_ref_handle_added) {
         NSInteger lasttime = [self lastQueryTime];
         self.contact_ref_handle_added = [[[self.contactsRef queryOrderedByChild:@"timestamp"] queryStartingAtValue:@(lasttime)] observeEventType:FIRDataEventTypeChildAdded withBlock:^(FIRDataSnapshot *snapshot) {
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+            dispatch_async(self.serialReceiveQueue, ^{
                 ChatUser *contact = [ChatContactsSynchronizer contactFromSnapshotFactory:snapshot];
                 if (contact) {
                     //                    //NSLog(@"FIREBASE: NEW CONTACT id: %@ firstname: %@ fullname: %@",contact.userId, contact.firstname, contact.fullname);
@@ -99,7 +100,7 @@
     if (!self.contact_ref_handle_changed) {
         self.contact_ref_handle_changed =
         [self.contactsRef observeEventType:FIRDataEventTypeChildChanged withBlock:^(FIRDataSnapshot *snapshot) {
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+            dispatch_async(self.serialReceiveQueue, ^{
                 //NSLog(@"FIREBASE: UPDATED CONTACT SNAPSHOT: %@", snapshot);
                 ChatUser *contact = [ChatContactsSynchronizer contactFromSnapshotFactory:snapshot];
                 if (contact) {
@@ -114,7 +115,7 @@
     if (!self.contact_ref_handle_removed) {
         self.contact_ref_handle_removed =
         [self.contactsRef observeEventType:FIRDataEventTypeChildRemoved withBlock:^(FIRDataSnapshot *snapshot) {
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+            dispatch_async(self.serialReceiveQueue, ^{
                 //NSLog(@"FIREBASE: REMOVED CONTACT SNAPSHOT: %@", snapshot);
                 ChatUser *contact = [ChatContactsSynchronizer contactFromSnapshotFactory:snapshot];
                 if (contact) {
