@@ -14,10 +14,12 @@ static ChatGroupsDB *sharedInstance = nil;
 //static sqlite3_stmt *statement = nil;
 
 @interface ChatGroupsDB () {
-    dispatch_queue_t serialDatabaseQueue;
     sqlite3 *database;
     sqlite3_stmt *statement;
 }
+
+@property (nonatomic, strong) dispatch_queue_t serialDatabaseQueue;
+
 @end
 
 @implementation ChatGroupsDB
@@ -31,7 +33,7 @@ static ChatGroupsDB *sharedInstance = nil;
 
 -(id)init {
     if (self = [super init]) {
-        serialDatabaseQueue = dispatch_queue_create("db.groups.sqllite", DISPATCH_QUEUE_SERIAL);
+        self.serialDatabaseQueue = dispatch_queue_create("db.groups.sqllite", DISPATCH_QUEUE_SERIAL);
         self.logQuery = YES;
         database = nil;
         statement = nil;
@@ -130,7 +132,7 @@ static ChatGroupsDB *sharedInstance = nil;
 //}
 
 -(void)insertOrUpdateGroupSyncronized:(ChatGroup *)group completion:(void(^)(BOOL success)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         ChatGroup *exists = [self getGroupById:group.groupId];
         if (exists) {
             [ChatManager logDebug:@"GROUP %@/%@ EXISTS. UPDATING...", group.groupId, group.name];
@@ -261,7 +263,7 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
 }
 
 -(void)getGroupByIdSyncronized:(NSString *)groupId completion:(void(^)(ChatGroup *)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         ChatGroup *group = [self getGroupById:groupId];
         callback(group);
     });
@@ -294,7 +296,7 @@ static NSString *SELECT_FROM_GROUPS_STATEMENT = @"SELECT groupId, user, groupNam
 }
 
 -(void)removeGroupSyncronized:(NSString *)groupId completion:(void(^)(BOOL error)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         BOOL ret = [self removeGroup:groupId];
         callback(ret);
     });

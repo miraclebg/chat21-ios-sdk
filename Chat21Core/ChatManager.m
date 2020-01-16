@@ -564,9 +564,11 @@ static ChatManager *sharedInstance = nil;
         
         if (success) {
             [self removeConversationFromDB:conversationId callback:^(BOOL success, NSError *error) {
-                if (callback) {
-                    callback(success, error);
-                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (callback) {
+                        callback(success, error);
+                    }
+                });
             }];
         }
     }];
@@ -583,9 +585,11 @@ static ChatManager *sharedInstance = nil;
         
         if (success) {
             [self removeConversationFromDB:conversationId callback:^(BOOL success, NSError *error) {
-                if (callback) {
-                    callback(success, error);
-                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (callback) {
+                        callback(success, error);
+                    }
+                });
             }];
         }
     }];
@@ -593,37 +597,20 @@ static ChatManager *sharedInstance = nil;
 
 -(void)removeConversationFromDB:(NSString *)conversationId callback:(ChatManagerCompletedBlock)callback {
     ChatDB *db = [ChatDB getSharedInstance];
-
-    dispatch_group_t g = dispatch_group_create();
-    dispatch_queue_t cq = dispatch_queue_create("com.gymnadz.removeConversationQueue",
-                                                DISPATCH_QUEUE_SERIAL);
     
-    dispatch_group_enter(g);
-    
-    __block BOOL success1 = NO;
-    __block BOOL success2 = NO;
-    
-    dispatch_async(cq, ^{
-        [db removeAllMessagesForConversationSynchronized:conversationId completion:^(BOOL success) {
-            success1 = success;
-            dispatch_group_leave(g);
-        }];
-    });
-    
-    dispatch_async(cq, ^{
-        [db removeConversationSynchronized:conversationId completion:^(BOOL success) {
-            success2 = success;
-            dispatch_group_leave(g);
-        }];
-    });
-    
-    dispatch_group_notify(g, dispatch_get_main_queue(), ^{
-        BOOL success = success1 && success2;
-        
-        if (callback) {
-            callback(success, nil);
+    [db removeAllMessagesForConversationSynchronized:conversationId completion:^(BOOL success) {
+        if (success) {
+            [db removeConversationSynchronized:conversationId completion:^(BOOL success) {
+                if (callback) {
+                    callback(success, nil);
+                }
+            }];
+        } else {
+            if (callback) {
+                callback(success, nil);
+            }
         }
-    });
+    }];
 }
 
 - (void)updateConversationLastMessageDb:(NSString*)conversationId callback:(ChatManagerCompletedBlock)callback {

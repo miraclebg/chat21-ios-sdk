@@ -16,11 +16,13 @@ static ChatContactsDB *sharedInstance = nil;
 //static sqlite3_stmt *statement_insert = nil;
 
 @interface ChatContactsDB () {
-    dispatch_queue_t serialDatabaseQueue;
     sqlite3 *database;
     sqlite3_stmt *statement;
     sqlite3_stmt *statement_insert;
 }
+
+@property (nonatomic, strong) dispatch_queue_t serialDatabaseQueue;
+
 @end
 
 @implementation ChatContactsDB
@@ -34,7 +36,7 @@ static ChatContactsDB *sharedInstance = nil;
 
 -(id)init {
     if (self = [super init]) {
-        serialDatabaseQueue = dispatch_queue_create("db.sqllite", DISPATCH_QUEUE_SERIAL);
+        self.serialDatabaseQueue = dispatch_queue_create("db.sqllite", DISPATCH_QUEUE_SERIAL);
         self.logQuery = NO;
         database = nil;
         statement = nil;
@@ -145,7 +147,7 @@ static ChatContactsDB *sharedInstance = nil;
 // *************
 
 -(void)insertOrUpdateContactSyncronized:(ChatUser *)contact completion:(void(^)(BOOL success)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         [self getContactByIdSyncronized:contact.userId completion:^(ChatUser *user) {
             if (user) {
                 BOOL ret = [self updateContact:contact];
@@ -236,7 +238,7 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
 }
 
 -(void)getMostRecentContactSyncronizedWithCompletion:(void(^)(ChatUser *contact)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         ChatUser *contact = [self getMostRecentContact];
         callback(contact);
     });
@@ -261,7 +263,7 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
 }
 
 -(void)getContactByIdSyncronized:(NSString *)contactId completion:(void(^)(ChatUser *)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         ChatUser *user = [self getContactById:contactId];
         if (callback != nil) {
             callback(user);
@@ -270,7 +272,7 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
 }
 
 -(void)getMultipleContactsByIdsSyncronized:(NSArray<NSString *> *)contactIds completion:(void(^)(NSArray<ChatUser *> *)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         NSArray<ChatUser *> *users = [self getMultipleContactsByIds:contactIds];
         if (callback != nil) {
             callback(users);
@@ -329,7 +331,7 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
 }
 
 -(void)searchContactsByFullnameSynchronized:(NSString *)searchString completion:(void (^)(NSArray<ChatUser *> *))callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         NSMutableArray<ChatUser *> *contacts = [[NSMutableArray alloc] init];
         NSString *querySQL = [NSString stringWithFormat:
                               @"%@ WHERE fullname LIKE \"%%%@%%\" ORDER BY fullname",SELECT_FROM_CONTACTS_STATEMENT, searchString]; //  LIMIT 50
@@ -350,7 +352,7 @@ static NSString *SELECT_FROM_CONTACTS_STATEMENT = @"SELECT contactId, firstname,
 }
 
 -(void)removeContactSynchronized:(NSString *)contactId completion:(void(^)(BOOL success)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         NSString *sql = [NSString stringWithFormat:@"DELETE FROM contacts WHERE contactId = \"%@\"", contactId];
         const char *stmt = [sql UTF8String];
         sqlite3_prepare_v2(self->database, stmt,-1, &self->statement, NULL);

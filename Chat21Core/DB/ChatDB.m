@@ -18,10 +18,12 @@ static ChatDB *sharedInstance = nil;
 //static sqlite3_stmt *statement = nil;
 
 @interface ChatDB () {
-    dispatch_queue_t serialDatabaseQueue;
     sqlite3 *database;
     sqlite3_stmt *statement;
 }
+
+@property (nonatomic, strong) dispatch_queue_t serialDatabaseQueue;
+
 @end
 
 @implementation ChatDB
@@ -36,7 +38,7 @@ static ChatDB *sharedInstance = nil;
 
 -(id)init {
     if (self = [super init]) {
-        serialDatabaseQueue = dispatch_queue_create("db_messages_conversations.sqllite", DISPATCH_QUEUE_SERIAL);
+        self.serialDatabaseQueue = dispatch_queue_create("db_messages_conversations.sqllite", DISPATCH_QUEUE_SERIAL);
         self.logQuery = NO;
         database = nil;
         statement = nil;
@@ -201,7 +203,7 @@ static ChatDB *sharedInstance = nil;
 }
 
 -(void)insertMessageIfNotExistsSyncronized:(ChatMessage *)message completion:(void(^)(BOOL success)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         if (!message.conversationId) {
             if (self.logQuery) {[ChatManager logError:@"ERROR: CAN'T INSERT A MESSAGE WITHOUT A CONVERSATION ID. MESSAGE ID: %@ MESSAGE TEXT: %@ MESSAGE CONVID: %@", message.messageId, message.text, message.conversationId];}
             
@@ -274,7 +276,7 @@ static ChatDB *sharedInstance = nil;
 }
 
 -(void)updateMessageSynchronized:(NSString *)messageId withStatus:(int)status completion:(void(^)(BOOL success)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         BOOL ret = [self updateMessage:messageId withStatus:status];
         if (callback != nil) {
             callback(ret);
@@ -353,7 +355,7 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 }
 
 -(void)getAllMessagesForConversationSyncronized:(NSString *)conversationId start:(int)start count:(int)count completion:(void(^)(NSArray *messages)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         NSArray *messages = [self getAllMessagesForConversation:conversationId start:0 count:200];
         if (callback != nil) {
             callback(messages);
@@ -390,7 +392,7 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 }
 
 -(void)getMessageByIdSyncronized:(NSString *)messageId completion:(void(^)(ChatMessage *)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         ChatMessage *message = [self getMessageById:messageId];
         if (callback != nil) {
             callback(message);
@@ -507,7 +509,7 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 }
 
 -(void)removeAllMessagesForConversationSynchronized:(NSString *)conversationId completion:(void(^)(BOOL success)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         BOOL ret = [self removeAllMessagesForConversation:conversationId];
         
         if (callback) {
@@ -541,7 +543,7 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 // ***********************
 
 -(void)insertOrUpdateConversationSyncronized:(ChatConversation *)conversation completion:(void(^)(BOOL success)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         [self getConversationByIdSynchronized:conversation.conversationId completion:^(ChatConversation *conv_exists) {
             if (conv_exists) {
                 BOOL ret = [self updateConversation:conversation];
@@ -561,7 +563,7 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 }
 
 -(void)updateLastMessageInConversation:(NSString*)conversationId completion:(void(^)(BOOL success)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         BOOL ret = [self updateLastMessageInConversation:conversationId];
         
         if (callback) {
@@ -600,7 +602,7 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 }
 
 -(void)resetLastMessageInConversation:(NSString*)conversationId completion:(void(^)(BOOL success)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         BOOL ret = [self resetLastMessageInConversation:conversationId];
         
         if (callback) {
@@ -637,7 +639,7 @@ static NSString *SELECT_FROM_MESSAGES_STATEMENT = @"select messageId, conversati
 }
 
 -(void)removeMessage:(NSString*)conversationId completion:(void(^)(BOOL success)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         BOOL ret = [self removeMessage:conversationId];
         
         if (callback) {
@@ -804,7 +806,7 @@ static NSString *SELECT_FROM_CONVERSATIONS_STATEMENT = @"SELECT conversationId, 
 }
 
 - (void)getConversationByIdSynchronized:(NSString *)conversationId completion:(void(^)(ChatConversation *)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         ChatConversation *conv = [self getConversationById:conversationId];
         if (callback != nil) {
             callback(conv);
@@ -837,7 +839,7 @@ static NSString *SELECT_FROM_CONVERSATIONS_STATEMENT = @"SELECT conversationId, 
 }
 
 - (void)removeConversationSynchronized:(NSString *)conversationId completion:(void(^)(BOOL success)) callback {
-    dispatch_async(serialDatabaseQueue, ^{
+    dispatch_async(self.serialDatabaseQueue, ^{
         BOOL ret = [self removeConversation:conversationId];
         
         if (callback) {

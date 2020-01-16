@@ -15,15 +15,19 @@
 #import "ChatUser.h"
 #import <libkern/OSAtomic.h>
 
-@implementation ChatConversationsHandler {
-    dispatch_queue_t serialConversationsMemoryQueue;
-}
+@interface ChatConversationsHandler()
+
+@property (nonatomic, strong) dispatch_queue_t serialConversationsMemoryQueue;
+
+@end
+
+@implementation ChatConversationsHandler
 
 -(id)initWithTenant:(NSString *)tenant user:(ChatUser *)user {
     if (self = [super init]) {
         //        self.lastEventHandler = 1;
         //        self.firebaseRef = firebaseRef;
-        serialConversationsMemoryQueue = dispatch_queue_create("conversationsQueue", DISPATCH_QUEUE_SERIAL);
+        self.serialConversationsMemoryQueue = dispatch_queue_create("conversationsQueue", DISPATCH_QUEUE_SERIAL);
         self.rootRef = [[FIRDatabase database] reference];
         self.tenant = tenant;
         self.loggeduser = user;
@@ -263,21 +267,21 @@
 // MEMORY DB - CONVERSATIONS
 
 -(void)insertConversationInMemory:(ChatConversation *)conversation completion:(void(^)(void))callback {
-    dispatch_async(serialConversationsMemoryQueue, ^{
+    dispatch_async(self.serialConversationsMemoryQueue, ^{
         [self insertConversationInMemory:conversation fromConversations:self.conversations];
         if (callback != nil) callback();
     });
 }
 
 -(void)updateConversationInMemory:(ChatConversation *)conversation completion:(void(^)(void))callback {
-    dispatch_async(serialConversationsMemoryQueue, ^{
+    dispatch_async(self.serialConversationsMemoryQueue, ^{
         [self updateConversationInMemory:conversation fromConversations:self.conversations];
         if (callback != nil) callback();
     });
 }
 
 -(void)removeConversationInMemory:(ChatConversation *)conversation completion:(void(^)(void))callback {
-    dispatch_async(serialConversationsMemoryQueue, ^{
+    dispatch_async(self.serialConversationsMemoryQueue, ^{
         [self removeConversationInMemory:conversation fromConversations:self.conversations];
         if (callback != nil) callback();
     });
@@ -286,21 +290,21 @@
 // MEMORY DB - ARCHIVED-CONVERSATIONS
 
 -(void)insertArchivedConversationInMemory:(ChatConversation *)conversation completion:(void(^)(void))callback {
-    dispatch_async(serialConversationsMemoryQueue, ^{
+    dispatch_async(self.serialConversationsMemoryQueue, ^{
         [self insertConversationInMemory:conversation fromConversations:self.archivedConversations];
         if (callback != nil) callback();
     });
 }
 
 -(void)updateArchivedConversationInMemory:(ChatConversation *)conversation completion:(void(^)(void))callback {
-    dispatch_async(serialConversationsMemoryQueue, ^{
+    dispatch_async(self.serialConversationsMemoryQueue, ^{
         [self updateConversationInMemory:conversation fromConversations:self.archivedConversations];
         if (callback != nil) callback();
     });
 }
 
 -(void)removeArchivedConversationInMemory:(ChatConversation *)conversation completion:(void(^)(void))callback {
-    dispatch_async(serialConversationsMemoryQueue, ^{
+    dispatch_async(self.serialConversationsMemoryQueue, ^{
         [self removeConversationInMemory:conversation fromConversations:self.archivedConversations];
         if (callback != nil) callback();
     });
