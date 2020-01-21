@@ -10,6 +10,8 @@
 #import "ChatGroupsSubscriber.h"
 #import "FirebaseDatabase/FIRDatabaseQuery.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class FIRDatabaseReference;
 @class FirebaseCustomAuthHelper;
 @class Firebase;
@@ -48,3 +50,5 @@
 -(void)addSubscriber:(id<ChatGroupsSubscriber>)subscriber;
 -(void)removeSubscriber:(id<ChatGroupsSubscriber>)subscriber;
 @end
+
+NS_ASSUME_NONNULL_END
