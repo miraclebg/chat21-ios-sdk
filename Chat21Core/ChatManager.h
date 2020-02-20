@@ -85,6 +85,7 @@ typedef void (^ChatManagerCompletedBlock)(BOOL success, NSError *error);
 
 //-(void)createGroupFromPushNotificationWithName:(NSString *)groupName groupId:(NSString *)groupId;
 -(void)registerForNotifications:(NSData *)devToken;
+-(void)unregisterForNotifications;
 
 -(void)startWithUser:(ChatUser *)user;
 -(void)dispose;

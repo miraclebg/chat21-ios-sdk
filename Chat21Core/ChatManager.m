@@ -822,6 +822,36 @@ static ChatManager *sharedInstance = nil;
     }];
 }
 
+-(void)unregisterForNotifications {
+    NSString *FCMToken = [FIRMessaging messaging].FCMToken;
+    [ChatManager logDebug:@"FCMToken: %@", FCMToken];
+    if (FCMToken == nil) {
+        [ChatManager logError:@"ERROR: FCMToken is nil"];
+        return;
+    }
+
+    [ChatManager logDebug:@"[FIRMessaging messaging].APNSToken: %@", [FIRMessaging messaging].APNSToken];
+    ChatUser *loggedUser = self.loggedUser;
+    if (loggedUser) {
+        [ChatManager logDebug:@"userId: %@ ", loggedUser.userId];
+        NSString *user_path = [ChatUtil userPath:loggedUser.userId];
+        [ChatManager logDebug:@"userPath: %@", user_path];
+        [ChatManager logDebug:@"Writing instanceId (FCMToken) %@ on path: %@", FCMToken, user_path];
+        
+        [[[[[[FIRDatabase database] reference] child:user_path] child:@"instances"] child:FCMToken] removeValueWithCompletionBlock:^(NSError * _Nullable error, FIRDatabaseReference * _Nonnull ref) {
+            if (error) {
+                [ChatManager logError:@"Error removing instanceId (FCMToken) on user_path %@: %@", error, user_path];
+            }
+            else {
+                [ChatManager logDebug:@"instanceId (FCMToken) %@ removed", FCMToken];
+            }
+        }];
+    }
+    else {
+        [ChatManager logDebug:@"No user is signed in for push notifications."];
+    }
+}
+
 -(void)registerForNotifications:(NSData *)devToken {
     NSString *FCMToken = [FIRMessaging messaging].FCMToken;
     [ChatManager logDebug:@"FCMToken: %@", FCMToken];
