@@ -213,8 +213,7 @@ static ChatManager *sharedInstance = nil;
 
 -(void)initGroupsHandler {
     if (!self.groupsHandler) {
-        ChatGroupsHandler *handler = self.groupsHandler;
-        handler = [self createGroupsHandlerForUser:self.loggedUser];
+        ChatGroupsHandler *handler = [self createGroupsHandlerForUser:self.loggedUser];
         [handler restoreGroupsFromDB]; // not thread-safe, call this method before firebase synchronization start
         [handler connect]; // firebase synchronization starts
     }
