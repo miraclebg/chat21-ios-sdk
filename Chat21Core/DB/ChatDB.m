@@ -868,7 +868,7 @@ static NSString *SELECT_FROM_CONVERSATIONS_STATEMENT = @"SELECT conversationId, 
     [self cleanupCurrentStatement];
     [self cleanupCurrentDb];
     
-    return NO;
+    return ret;
 }
 
 
