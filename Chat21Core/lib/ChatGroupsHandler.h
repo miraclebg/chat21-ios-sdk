@@ -10,8 +10,6 @@
 #import "ChatGroupsSubscriber.h"
 #import "FirebaseDatabase/FIRDatabaseQuery.h"
 
-NS_ASSUME_NONNULL_BEGIN
-
 @class FIRDatabaseReference;
 @class FirebaseCustomAuthHelper;
 @class Firebase;
@@ -20,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ChatGroupsHandler : NSObject
 
-@property (strong, nonatomic) ChatUser * _Nullable loggeduser;
+@property (strong, nonatomic) ChatUser * loggeduser;
 @property (strong, nonatomic) NSString *me;
 @property (strong, nonatomic) FirebaseCustomAuthHelper *authHelper;
 @property (strong, nonatomic) NSMutableDictionary *groups;
@@ -51,4 +49,3 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)removeSubscriber:(id<ChatGroupsSubscriber>)subscriber;
 @end
 
-NS_ASSUME_NONNULL_END

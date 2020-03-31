@@ -9,8 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <Firebase/Firebase.h>
 
-NS_ASSUME_NONNULL_BEGIN
-
 static int const CONV_STATUS_FAILED = -1000;
 static int const CONV_STATUS_JUST_CREATED = -900; // for group management
 static int const CONV_STATUS_LAST_MESSAGE = 0;
@@ -71,5 +69,3 @@ static NSString* const CONV_ATTRIBUTES_KEY = @"attributes";
 
 
 @end
-
-NS_ASSUME_NONNULL_END
