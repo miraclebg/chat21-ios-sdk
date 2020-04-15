@@ -11,7 +11,7 @@
 #import "defines.h"
 
 @interface NotificationAlertView () {
-    SystemSoundID soundID;
+    
 }
 @end
 
@@ -154,6 +154,8 @@ static float showTime = 4.0;
 }
 
 -(void)playSound {
+    SystemSoundID soundID;
+    
     // convert mp3 > caf
     // afconvert -f caff -d LEI16@44100 -c 1 sounds-1065-just-like-that.mp3 newnotif2.caf
     // on completion play a sound
@@ -167,6 +169,7 @@ static float showTime = 4.0;
     //    NSURL *fileURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource: ofType:];
     AudioServicesCreateSystemSoundID((__bridge_retained CFURLRef)fileURL,&soundID);
     AudioServicesPlaySystemSound(soundID);
+    AudioServicesDisposeSystemSoundID(soundID);
 }
 
 @end

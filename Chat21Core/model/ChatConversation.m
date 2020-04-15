@@ -15,6 +15,22 @@
 #import "ChatManager.h"
 #import <Firebase/Firebase.h>
 
+int const CONV_STATUS_FAILED = -1000;
+int const CONV_STATUS_JUST_CREATED = -900; // for group management
+int const CONV_STATUS_LAST_MESSAGE = 0;
+
+NSString* const CONV_LAST_MESSAGE_TEXT_KEY = @"last_message_text";
+NSString* const CONV_RECIPIENT_KEY = @"recipient";
+NSString* const CONV_SENDER_KEY = @"sender";
+NSString* const CONV_SENDER_FULLNAME_KEY = @"sender_fullname";
+NSString* const CONV_RECIPIENT_FULLNAME_KEY = @"recipient_fullname";
+NSString* const CONV_TIMESTAMP_KEY = @"timestamp";
+NSString* const CONV_IS_NEW_KEY = @"is_new";
+NSString* const CONV_CONVERS_WITH_KEY = @"convers_with";
+NSString* const CONV_CHANNEL_TYPE_KEY = @"channel_type";
+NSString* const CONV_STATUS_KEY = @"status";
+NSString* const CONV_ATTRIBUTES_KEY = @"attributes";
+
 @implementation ChatConversation
 
 -(NSString *)dateFormattedForListView {
