@@ -30,6 +30,7 @@ NSString* const CONV_CONVERS_WITH_KEY = @"convers_with";
 NSString* const CONV_CHANNEL_TYPE_KEY = @"channel_type";
 NSString* const CONV_STATUS_KEY = @"status";
 NSString* const CONV_ATTRIBUTES_KEY = @"attributes";
+NSString* const CONV_TYPE_KEY = @"type";
 
 @implementation ChatConversation
 
@@ -73,6 +74,8 @@ NSString* const CONV_ATTRIBUTES_KEY = @"attributes";
     NSNumber *timestamp = snapshot.value[CONV_TIMESTAMP_KEY];
     NSNumber *is_new = snapshot.value[CONV_IS_NEW_KEY];
     NSNumber *status = snapshot.value[CONV_STATUS_KEY];
+    NSString *type = snapshot.value[CONV_TYPE_KEY];
+    
     NSMutableDictionary *attributes = snapshot.value[CONV_ATTRIBUTES_KEY];
     
     NSString *conversWith = nil;
@@ -111,6 +114,8 @@ NSString* const CONV_ATTRIBUTES_KEY = @"attributes";
     conversation.status = (int)[status integerValue];
     conversation.attributes = attributes;
     conversation.user = me.userId;
+    conversation.mtype = type;
+    
     return conversation;
 }
 
