@@ -168,8 +168,9 @@ static float showTime = 4.0;
     
     //    NSURL *fileURL = [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource: ofType:];
     AudioServicesCreateSystemSoundID((__bridge_retained CFURLRef)fileURL,&soundID);
-    AudioServicesPlaySystemSound(soundID);
-    AudioServicesDisposeSystemSoundID(soundID);
+    AudioServicesPlaySystemSoundWithCompletion(soundID, ^{
+        AudioServicesDisposeSystemSoundID(soundID);
+    });
 }
 
 @end
